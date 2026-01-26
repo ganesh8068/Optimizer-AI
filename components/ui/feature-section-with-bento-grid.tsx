@@ -54,11 +54,13 @@ export function FeaturesSectionWithBentoGrid() {
       <div className="relative">
         <div className="grid grid-cols-1 md:grid-cols-6 lg:grid-cols-6 mt-12 bg-white rounded-3xl border border-slate-100 shadow-xl overflow-hidden">
           {features.map((feature) => (
-            <FeatureCard key={feature.title} className={feature.className}>
-              <FeatureTitle>{feature.title}</FeatureTitle>
-              <FeatureDescription>{feature.description}</FeatureDescription>
-              <div className="h-full w-full">{feature.skeleton}</div>
-            </FeatureCard>
+            <div key={feature.title}>
+              <FeatureCard className={feature.className}>
+                <FeatureTitle>{feature.title}</FeatureTitle>
+                <FeatureDescription>{feature.description}</FeatureDescription>
+                <div className="h-full w-full">{feature.skeleton}</div>
+              </FeatureCard>
+            </div>
           ))}
         </div>
       </div>

@@ -27,7 +27,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -116,16 +116,16 @@ jobs:
         run: |
           LINT_STATUS="${{ needs.lint-and-test.result }}"
           SECURITY_STATUS="${{ needs.security-scan.result }}"
-          
+
           echo "Pipeline Status Report:"
           echo "====================="
           echo "Lint and Test: $LINT_STATUS"
           echo "Security Scan: $SECURITY_STATUS"
           echo ""
-          
+
           if [ "$LINT_STATUS" = "failure" ]; then
             echo "❌ Pipeline FAILED: Lint and test check failed"
             exit 1
           fi
-          
+
           echo "✅ Pipeline PASSED"
