@@ -36,7 +36,7 @@ export async function analyzeResume(
   expLevel: ExperienceLevel
 ): Promise<AnalysisResult> {
   // Use gemini-1.5-flash for complex reasoning tasks like resume optimization
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey: (import.meta.env as any).VITE_GEMINI_API_KEY });
   const response = await ai.models.generateContent({
     model: 'gemini-1.5-flash',
     contents: {
@@ -84,7 +84,7 @@ export async function analyzeLinkedIn(
   jobRole: string
 ): Promise<LinkedInAnalysisResult> {
   // Use gemini-1.5-flash for complex branding and multi-file analysis tasks
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey: (import.meta.env as any).VITE_GEMINI_API_KEY });
   const response = await ai.models.generateContent({
     model: 'gemini-1.5-flash',
     contents: {
