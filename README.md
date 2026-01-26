@@ -10,7 +10,7 @@ View your app in AI Studio: https://ai.studio/apps/drive/1KqQ5IJ2_ZxqQInk9w42XQh
 
 ## Run Locally
 
-**Prerequisites:**  Node.js
+**Prerequisites:** Node.js
 
 1. Install dependencies:
    ```bash
@@ -30,16 +30,20 @@ View your app in AI Studio: https://ai.studio/apps/drive/1KqQ5IJ2_ZxqQInk9w42XQh
 **Prerequisites:** Docker & Docker Compose
 
 ### Development
+
 ```bash
 docker-compose --profile dev up
 ```
+
 Access at: http://localhost:3000
 
 ### Production
+
 ```bash
 docker build --build-arg VITE_GEMINI_API_KEY=your_key -t optimizer-ai:latest .
 docker run -p 3001:3001 optimizer-ai:latest
 ```
+
 Access at: http://localhost:3001
 
 ## CI/CD Pipeline
@@ -47,6 +51,7 @@ Access at: http://localhost:3001
 This project includes an automated CI/CD pipeline with GitHub Actions. See [docs/CI_CD.md](docs/CI_CD.md) for detailed information.
 
 ### Pipeline Features
+
 - ✅ Automated TypeScript type checking
 - ✅ Multi-version Node.js testing (18.x, 20.x)
 - ✅ Security vulnerability scanning
@@ -54,17 +59,21 @@ This project includes an automated CI/CD pipeline with GitHub Actions. See [docs
 - ✅ Docker containerization support
 
 ### Setup
+
 To enable CI/CD, set these GitHub secrets:
+
 1. `VITE_GEMINI_API_KEY` - Your Google Gemini API key
 
 ## Build & Deploy
 
 ### Build for Production
+
 ```bash
 npm run build
 ```
 
 ### Run Production Server
+
 ```bash
 npm start
 ```

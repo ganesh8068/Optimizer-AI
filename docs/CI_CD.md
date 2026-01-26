@@ -7,6 +7,7 @@ This project uses GitHub Actions for continuous integration and deployment (CI/C
 ## Pipeline Stages
 
 ### 1. **Lint and Test** (Required)
+
 - Runs on all pushes and pull requests
 - Tests on Node.js 18.x and 20.x
 - Steps:
@@ -17,12 +18,14 @@ This project uses GitHub Actions for continuous integration and deployment (CI/C
   - Upload build artifacts
 
 ### 2. **Security Scan** (Optional)
+
 - Runs in parallel with lint-and-test
 - Performs npm audit for vulnerabilities
 - Integrates with Snyk for advanced security scanning (optional)
 - Non-blocking (continues on error)
 
 ### 3. **Build and Deploy** (Conditional)
+
 - Runs only on successful lint-and-test completion
 - Triggered only on pushes to `main` or `develop` branches
 - Builds application with production secrets
@@ -32,6 +35,7 @@ This project uses GitHub Actions for continuous integration and deployment (CI/C
   - **develop branch** → Staging
 
 ### 4. **Notify** (Always)
+
 - Final step that reports pipeline status
 - Fails if lint-and-test or security-scan failed
 
@@ -51,6 +55,7 @@ SNYK_TOKEN              # (Optional) Snyk security scanning token
 ### 2. GitHub Pages Deployment (Optional)
 
 If deploying to GitHub Pages:
+
 1. Go to **Settings → Pages**
 2. Set source to "GitHub Actions"
 3. Ensure `gh-pages` branch exists or enable automatic creation
@@ -66,15 +71,18 @@ VITE_GEMINI_API_KEY=your_api_key_here
 ## Local Development with Docker
 
 ### Development Container
+
 ```bash
 docker-compose --profile dev up
 ```
 
 Accesses:
+
 - Vite dev server: `http://localhost:3000`
 - Express server: `http://localhost:3001`
 
 ### Production Container
+
 ```bash
 # Build with API key
 docker build --build-arg VITE_GEMINI_API_KEY=your_key -t optimizer-ai:latest .
@@ -88,17 +96,20 @@ Access at: `http://localhost:3001`
 ## Manual Deployment
 
 ### Build
+
 ```bash
 npm ci
 npm run build
 ```
 
 ### Run Production
+
 ```bash
 npm start
 ```
 
 The server will:
+
 - Build the application
 - Start Express server on port 3001
 - Serve static files from `dist/` directory
@@ -106,27 +117,33 @@ The server will:
 ## Monitoring
 
 ### Health Check
+
 The Docker container includes a health check that monitors the application every 30 seconds.
 
 ### Build Artifacts
+
 Successful builds are uploaded as artifacts and retained for 1 day.
 
 ## Troubleshooting
 
 ### Pipeline Fails on "Run TypeScript compiler check"
+
 - Ensure all TypeScript files have proper type annotations
 - Run locally: `npx tsc --noEmit`
 
 ### Pipeline Fails on "Build application"
+
 - Check for build errors locally: `npm run build`
 - Verify all dependencies are installed: `npm ci`
 
 ### Deploy Step Fails
+
 - Verify `VITE_GEMINI_API_KEY` secret is set correctly
 - Check Express server is starting: `npm start`
 - Verify port 3001 is available
 
 ### Docker Build Fails
+
 - Ensure Docker daemon is running
 - Check Node.js version compatibility
 - Clear Docker cache if needed: `docker builder prune`
@@ -136,7 +153,6 @@ Successful builds are uploaded as artifacts and retained for 1 day.
 - **main**: Production-ready code
   - Triggers production deployment
   - Pull requests require passing CI/CD
-  
 - **develop**: Development branch
   - Triggers staging deployment
   - Integration branch before main
@@ -148,6 +164,7 @@ Successful builds are uploaded as artifacts and retained for 1 day.
 ## Performance Optimization
 
 The pipeline uses:
+
 - **npm ci**: Faster, more reliable than npm install
 - **Action caching**: Caches node_modules across runs
 - **Multi-version testing**: Tests compatibility with Node 18 & 20
