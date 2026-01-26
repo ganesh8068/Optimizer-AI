@@ -1,4 +1,3 @@
-
 import {
   createContext,
   forwardRef,
@@ -9,68 +8,57 @@ import {
   useImperativeHandle,
   useRef,
   useState,
-} from "react"
-import { debounce } from "lodash"
-import Matter from "matter-js"
-import decomp from "poly-decomp"
+} from "react";
+import { debounce } from "lodash";
+import Matter from "matter-js";
+import decomp from "poly-decomp";
 
-import { cn } from "../../lib/utils"
+import { cn } from "../../lib/utils";
 
-const {
-  Bodies,
-  Common,
-  Engine,
-  Events,
-  Mouse,
-  MouseConstraint,
-  Query,
-  Render,
-  Runner,
-  World,
-} = Matter;
+const { Bodies, Common, Engine, Events, Mouse, MouseConstraint, Query, Render, Runner, World } =
+  Matter;
 
 // Function to convert SVG path "d" to vertices
 function parsePathToVertices(path: string, sampleLength = 15) {
-    // Create a temporary SVG element to measure path length
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    const pathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    pathElement.setAttribute('d', path);
-    svg.appendChild(pathElement);
-    svg.style.visibility = 'hidden';
-    document.body.appendChild(svg);
+  // Create a temporary SVG element to measure path length
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  const pathElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  pathElement.setAttribute("d", path);
+  svg.appendChild(pathElement);
+  svg.style.visibility = "hidden";
+  document.body.appendChild(svg);
 
-    const points: { x: number, y: number }[] = [];
-    let lastPoint: { x: number, y: number } | null = null;
+  const points: { x: number; y: number }[] = [];
+  let lastPoint: { x: number; y: number } | null = null;
 
-    try {
-        // Get total length of the path
-        const totalLength = pathElement.getTotalLength();
-        let length = 0;
+  try {
+    // Get total length of the path
+    const totalLength = pathElement.getTotalLength();
+    let length = 0;
 
-        // Sample points along the path
-        while (length < totalLength) {
-            const point = pathElement.getPointAtLength(length);
+    // Sample points along the path
+    while (length < totalLength) {
+      const point = pathElement.getPointAtLength(length);
 
-            // Only add point if it's different from the last one
-            if (!lastPoint || point.x !== lastPoint.x || point.y !== lastPoint.y) {
-                points.push({ x: point.x, y: point.y });
-                lastPoint = point;
-            }
+      // Only add point if it's different from the last one
+      if (!lastPoint || point.x !== lastPoint.x || point.y !== lastPoint.y) {
+        points.push({ x: point.x, y: point.y });
+        lastPoint = point;
+      }
 
-            length += sampleLength;
-        }
-
-        // Ensure we get the last point
-        const finalPoint = pathElement.getPointAtLength(totalLength);
-        if (lastPoint && (finalPoint.x !== lastPoint.x || finalPoint.y !== lastPoint.y)) {
-            points.push({ x: finalPoint.x, y: finalPoint.y });
-        }
-    } finally {
-        document.body.removeChild(svg);
+      length += sampleLength;
     }
 
-    return points;
+    // Ensure we get the last point
+    const finalPoint = pathElement.getPointAtLength(totalLength);
+    if (lastPoint && (finalPoint.x !== lastPoint.x || finalPoint.y !== lastPoint.y)) {
+      points.push({ x: finalPoint.x, y: finalPoint.y });
+    }
+  } finally {
+    document.body.removeChild(svg);
+  }
 
+  return points;
 }
 
 function calculatePosition(
@@ -82,55 +70,49 @@ function calculatePosition(
     const percentage = parseFloat(value) / 100;
     return containerSize * percentage;
   }
-  return typeof value === "number"
-    ? value
-    : elementSize - containerSize + elementSize / 2;
+  return typeof value === "number" ? value : elementSize - containerSize + elementSize / 2;
 }
 
 type GravityProps = {
-  children: ReactNode
-  debug?: boolean
-  gravity?: { x: number; y: number }
-  resetOnResize?: boolean
-  grabCursor?: boolean
-  addTopWall?: boolean
-  autoStart?: boolean
-  className?: string
-}
+  children: ReactNode;
+  debug?: boolean;
+  gravity?: { x: number; y: number };
+  resetOnResize?: boolean;
+  grabCursor?: boolean;
+  addTopWall?: boolean;
+  autoStart?: boolean;
+  className?: string;
+};
 
 type PhysicsBody = {
-  element: HTMLElement
-  body: Matter.Body
-  props: MatterBodyProps
-}
+  element: HTMLElement;
+  body: Matter.Body;
+  props: MatterBodyProps;
+};
 
 // Fix: Make children optional in MatterBodyProps to resolve TS errors in GravitySection.tsx
 type MatterBodyProps = {
-  children?: ReactNode
-  matterBodyOptions?: Matter.IBodyDefinition
-  isDraggable?: boolean
-  bodyType?: "rectangle" | "circle" | "svg"
-  sampleLength?: number
-  x?: number | string
-  y?: number | string
-  angle?: number
-  className?: string
-}
+  children?: ReactNode;
+  matterBodyOptions?: Matter.IBodyDefinition;
+  isDraggable?: boolean;
+  bodyType?: "rectangle" | "circle" | "svg";
+  sampleLength?: number;
+  x?: number | string;
+  y?: number | string;
+  angle?: number;
+  className?: string;
+};
 
 export type GravityRef = {
-  start: () => void
-  stop: () => void
-  reset: () => void
-}
+  start: () => void;
+  stop: () => void;
+  reset: () => void;
+};
 
 const GravityContext = createContext<{
-  registerElement: (
-    id: string,
-    element: HTMLElement,
-    props: MatterBodyProps
-  ) => void
-  unregisterElement: (id: string) => void
-} | null>(null)
+  registerElement: (id: string, element: HTMLElement, props: MatterBodyProps) => void;
+  unregisterElement: (id: string) => void;
+} | null>(null);
 
 const MatterBody = ({
   children,
@@ -149,12 +131,12 @@ const MatterBody = ({
   angle = 0,
   ...props
 }: MatterBodyProps) => {
-  const elementRef = useRef<HTMLDivElement>(null)
-  const idRef = useRef(Math.random().toString(36).substring(7))
-  const context = useContext(GravityContext)
+  const elementRef = useRef<HTMLDivElement>(null);
+  const idRef = useRef(Math.random().toString(36).substring(7));
+  const context = useContext(GravityContext);
 
   useEffect(() => {
-    if (!elementRef.current || !context) return
+    if (!elementRef.current || !context) return;
     context.registerElement(idRef.current, elementRef.current, {
       children,
       matterBodyOptions,
@@ -165,24 +147,20 @@ const MatterBody = ({
       y,
       angle,
       ...props,
-    })
+    });
 
-    return () => context.unregisterElement(idRef.current)
-  }, [props, children, matterBodyOptions, isDraggable])
+    return () => context.unregisterElement(idRef.current);
+  }, [props, children, matterBodyOptions, isDraggable]);
 
   return (
     <div
       ref={elementRef}
-      className={cn(
-        "absolute",
-        className,
-        isDraggable && "pointer-events-none"
-      )}
+      className={cn("absolute", className, isDraggable && "pointer-events-none")}
     >
       {children}
     </div>
-  )
-}
+  );
+};
 
 const Gravity = forwardRef<GravityRef, GravityProps>(
   (
@@ -199,35 +177,35 @@ const Gravity = forwardRef<GravityRef, GravityProps>(
     },
     ref
   ) => {
-    const canvas = useRef<HTMLDivElement>(null)
-    const engine = useRef(Engine.create())
+    const canvas = useRef<HTMLDivElement>(null);
+    const engine = useRef(Engine.create());
     // Fix: provide initial values for useRef to avoid "Expected 1 arguments, but got 0" errors
-    const render = useRef<Matter.Render | undefined>(undefined)
-    const runner = useRef<Matter.Runner | undefined>(undefined)
-    const bodiesMap = useRef(new Map<string, PhysicsBody>())
-    const frameId = useRef<number | undefined>(undefined)
-    const mouseConstraint = useRef<Matter.MouseConstraint | undefined>(undefined)
-    const mouseDown = useRef(false)
-    const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 })
+    const render = useRef<Matter.Render | undefined>(undefined);
+    const runner = useRef<Matter.Runner | undefined>(undefined);
+    const bodiesMap = useRef(new Map<string, PhysicsBody>());
+    const frameId = useRef<number | undefined>(undefined);
+    const mouseConstraint = useRef<Matter.MouseConstraint | undefined>(undefined);
+    const mouseDown = useRef(false);
+    const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
 
-    const isRunning = useRef(false)
+    const isRunning = useRef(false);
 
     // Register Matter.js body in the physics world
     const registerElement = useCallback(
       (id: string, element: HTMLElement, props: MatterBodyProps) => {
-        if (!canvas.current) return
-        const width = element.offsetWidth
-        const height = element.offsetHeight
-        const canvasRect = canvas.current!.getBoundingClientRect()
+        if (!canvas.current) return;
+        const width = element.offsetWidth;
+        const height = element.offsetHeight;
+        const canvasRect = canvas.current!.getBoundingClientRect();
 
-        const angle = (props.angle || 0) * (Math.PI / 180)
+        const angle = (props.angle || 0) * (Math.PI / 180);
 
-        const x = calculatePosition(props.x, canvasRect.width, width)
-        const y = calculatePosition(props.y, canvasRect.height, height)
+        const x = calculatePosition(props.x, canvasRect.width, width);
+        const y = calculatePosition(props.y, canvasRect.height, height);
 
-        let body
+        let body;
         if (props.bodyType === "circle") {
-          const radius = Math.max(width, height) / 2
+          const radius = Math.max(width, height) / 2;
           body = Bodies.circle(x, y, radius, {
             ...props.matterBodyOptions,
             angle: angle,
@@ -236,16 +214,16 @@ const Gravity = forwardRef<GravityRef, GravityProps>(
               strokeStyle: debug ? "#333333" : "#00000000",
               lineWidth: debug ? 3 : 0,
             },
-          })
+          });
         } else if (props.bodyType === "svg") {
-          const paths = element.querySelectorAll("path")
-          const vertexSets: Matter.Vector[][] = []
+          const paths = element.querySelectorAll("path");
+          const vertexSets: Matter.Vector[][] = [];
 
           paths.forEach((path) => {
-            const d = path.getAttribute("d")
-            const p = parsePathToVertices(d!, props.sampleLength)
-            vertexSets.push(p)
-          })
+            const d = path.getAttribute("d");
+            const p = parsePathToVertices(d!, props.sampleLength);
+            vertexSets.push(p);
+          });
 
           body = Bodies.fromVertices(x, y, vertexSets, {
             ...props.matterBodyOptions,
@@ -255,7 +233,7 @@ const Gravity = forwardRef<GravityRef, GravityProps>(
               strokeStyle: debug ? "#333333" : "#00000000",
               lineWidth: debug ? 3 : 0,
             },
-          })
+          });
         } else {
           body = Bodies.rectangle(x, y, width, height, {
             ...props.matterBodyOptions,
@@ -265,50 +243,50 @@ const Gravity = forwardRef<GravityRef, GravityProps>(
               strokeStyle: debug ? "#333333" : "#00000000",
               lineWidth: debug ? 3 : 0,
             },
-          })
+          });
         }
 
         if (body) {
-          World.add(engine.current.world, [body])
-          bodiesMap.current.set(id, { element, body, props })
+          World.add(engine.current.world, [body]);
+          bodiesMap.current.set(id, { element, body, props });
         }
       },
       [debug]
-    )
+    );
 
     // Unregister Matter.js body from the physics world
     const unregisterElement = useCallback((id: string) => {
-      const body = bodiesMap.current.get(id)
+      const body = bodiesMap.current.get(id);
       if (body) {
-        World.remove(engine.current.world, body.body)
-        bodiesMap.current.delete(id)
+        World.remove(engine.current.world, body.body);
+        bodiesMap.current.delete(id);
       }
-    }, [])
+    }, []);
 
     // Keep react elements in sync with the physics world
     const updateElements = useCallback(() => {
       bodiesMap.current.forEach(({ element, body }) => {
-        const { x, y } = body.position
-        const rotation = body.angle * (180 / Math.PI)
+        const { x, y } = body.position;
+        const rotation = body.angle * (180 / Math.PI);
 
         element.style.transform = `translate(${
           x - element.offsetWidth / 2
-        }px, ${y - element.offsetHeight / 2}px) rotate(${rotation}deg)`
-      })
+        }px, ${y - element.offsetHeight / 2}px) rotate(${rotation}deg)`;
+      });
 
-      frameId.current = window.requestAnimationFrame(updateElements)
-    }, [])
+      frameId.current = window.requestAnimationFrame(updateElements);
+    }, []);
 
     const initializeRenderer = useCallback(() => {
-      if (!canvas.current) return
+      if (!canvas.current) return;
 
-      const height = canvas.current.offsetHeight
-      const width = canvas.current.offsetWidth
+      const height = canvas.current.offsetHeight;
+      const width = canvas.current.offsetWidth;
 
-      Common.setDecomp(decomp)
+      Common.setDecomp(decomp);
 
-      engine.current.gravity.x = gravity.x
-      engine.current.gravity.y = gravity.y
+      engine.current.gravity.x = gravity.x;
+      engine.current.gravity.y = gravity.y;
 
       render.current = Render.create({
         element: canvas.current,
@@ -319,9 +297,9 @@ const Gravity = forwardRef<GravityRef, GravityProps>(
           wireframes: false,
           background: "#00000000",
         },
-      })
+      });
 
-      const mouse = Mouse.create(render.current.canvas)
+      const mouse = Mouse.create(render.current.canvas);
       mouseConstraint.current = MouseConstraint.create(engine.current, {
         mouse: mouse,
         constraint: {
@@ -330,7 +308,7 @@ const Gravity = forwardRef<GravityRef, GravityProps>(
             visible: debug,
           },
         },
-      })
+      });
 
       // Add walls
       const walls = [
@@ -360,7 +338,7 @@ const Gravity = forwardRef<GravityRef, GravityProps>(
             visible: debug,
           },
         }),
-      ]
+      ];
 
       const topWall = addTopWall
         ? Bodies.rectangle(width / 2, -10, width, 20, {
@@ -370,160 +348,150 @@ const Gravity = forwardRef<GravityRef, GravityProps>(
               visible: debug,
             },
           })
-        : null
+        : null;
 
       if (topWall) {
-        walls.push(topWall)
+        walls.push(topWall);
       }
 
       const touchingMouse = () =>
         Query.point(
           engine.current.world.bodies,
           mouseConstraint.current?.mouse.position || { x: 0, y: 0 }
-        ).length > 0
+        ).length > 0;
 
       if (grabCursor) {
         Events.on(engine.current, "beforeUpdate", (event) => {
           if (canvas.current) {
             if (!mouseDown.current && !touchingMouse()) {
-              canvas.current.style.cursor = "default"
+              canvas.current.style.cursor = "default";
             } else if (touchingMouse()) {
-              canvas.current.style.cursor = mouseDown.current
-                ? "grabbing"
-                : "grab"
+              canvas.current.style.cursor = mouseDown.current ? "grabbing" : "grab";
             }
           }
-        })
+        });
 
         canvas.current.addEventListener("mousedown", (event) => {
-          mouseDown.current = true
+          mouseDown.current = true;
 
           if (canvas.current) {
             if (touchingMouse()) {
-              canvas.current.style.cursor = "grabbing"
+              canvas.current.style.cursor = "grabbing";
             } else {
-              canvas.current.style.cursor = "default"
+              canvas.current.style.cursor = "default";
             }
           }
-        })
+        });
         canvas.current.addEventListener("mouseup", (event) => {
-          mouseDown.current = false
+          mouseDown.current = false;
 
           if (canvas.current) {
             if (touchingMouse()) {
-              canvas.current.style.cursor = "grab"
+              canvas.current.style.cursor = "grab";
             } else {
-              canvas.current.style.cursor = "default"
+              canvas.current.style.cursor = "default";
             }
           }
-        })
+        });
       }
 
-      World.add(engine.current.world, [mouseConstraint.current, ...walls])
+      World.add(engine.current.world, [mouseConstraint.current, ...walls]);
 
-      render.current.mouse = mouse
+      render.current.mouse = mouse;
 
-      runner.current = Runner.create()
-      Render.run(render.current)
-      updateElements()
-      runner.current.enabled = false
+      runner.current = Runner.create();
+      Render.run(render.current);
+      updateElements();
+      runner.current.enabled = false;
 
       if (autoStart) {
-        runner.current.enabled = true
-        startEngine()
+        runner.current.enabled = true;
+        startEngine();
       }
-    }, [updateElements, debug, autoStart])
+    }, [updateElements, debug, autoStart]);
 
     // Clear the Matter.js world
     const clearRenderer = useCallback(() => {
       if (frameId.current) {
-        window.cancelAnimationFrame(frameId.current)
+        window.cancelAnimationFrame(frameId.current);
       }
 
       if (mouseConstraint.current) {
-        World.remove(engine.current.world, mouseConstraint.current)
+        World.remove(engine.current.world, mouseConstraint.current);
       }
 
       if (render.current) {
-        Mouse.clearSourceEvents(render.current.mouse)
-        Render.stop(render.current)
-        render.current.canvas.remove()
+        Mouse.clearSourceEvents(render.current.mouse);
+        Render.stop(render.current);
+        render.current.canvas.remove();
       }
 
       if (runner.current) {
-        Runner.stop(runner.current)
+        Runner.stop(runner.current);
       }
 
       if (engine.current) {
-        World.clear(engine.current.world, false)
-        Engine.clear(engine.current)
+        World.clear(engine.current.world, false);
+        Engine.clear(engine.current);
       }
 
-      bodiesMap.current.clear()
-    }, [])
+      bodiesMap.current.clear();
+    }, []);
 
     const handleResize = useCallback(() => {
-      if (!canvas.current || !resetOnResize) return
+      if (!canvas.current || !resetOnResize) return;
 
-      const newWidth = canvas.current.offsetWidth
-      const newHeight = canvas.current.offsetHeight
+      const newWidth = canvas.current.offsetWidth;
+      const newHeight = canvas.current.offsetHeight;
 
-      setCanvasSize({ width: newWidth, height: newHeight })
+      setCanvasSize({ width: newWidth, height: newHeight });
 
       // Clear and reinitialize
-      clearRenderer()
-      initializeRenderer()
-    }, [clearRenderer, initializeRenderer, resetOnResize])
+      clearRenderer();
+      initializeRenderer();
+    }, [clearRenderer, initializeRenderer, resetOnResize]);
 
     const startEngine = useCallback(() => {
       if (runner.current) {
-        runner.current.enabled = true
+        runner.current.enabled = true;
 
-        Runner.run(runner.current, engine.current)
+        Runner.run(runner.current, engine.current);
       }
       if (render.current) {
-        Render.run(render.current)
+        Render.run(render.current);
       }
-      frameId.current = window.requestAnimationFrame(updateElements)
-      isRunning.current = true
-    }, [updateElements, canvasSize])
+      frameId.current = window.requestAnimationFrame(updateElements);
+      isRunning.current = true;
+    }, [updateElements, canvasSize]);
 
     const stopEngine = useCallback(() => {
-      if (!isRunning.current) return
+      if (!isRunning.current) return;
 
       if (runner.current) {
-        Runner.stop(runner.current)
+        Runner.stop(runner.current);
       }
       if (render.current) {
-        Render.stop(render.current)
+        Render.stop(render.current);
       }
       if (frameId.current) {
-        window.cancelAnimationFrame(frameId.current)
+        window.cancelAnimationFrame(frameId.current);
       }
-      isRunning.current = false
-    }, [])
+      isRunning.current = false;
+    }, []);
 
     const reset = useCallback(() => {
-      stopEngine()
+      stopEngine();
       bodiesMap.current.forEach(({ element, body, props }) => {
-        body.angle = props.angle || 0
+        body.angle = props.angle || 0;
 
-        const x = calculatePosition(
-          props.x,
-          canvasSize.width,
-          element.offsetWidth
-        )
-        const y = calculatePosition(
-          props.y,
-          canvasSize.height,
-          element.offsetHeight
-        )
-        body.position.x = x
-        body.position.y = y
-      })
-      updateElements()
-      handleResize()
-    }, [])
+        const x = calculatePosition(props.x, canvasSize.width, element.offsetWidth);
+        const y = calculatePosition(props.y, canvasSize.height, element.offsetHeight);
+        body.position.x = x;
+        body.position.y = y;
+      });
+      updateElements();
+      handleResize();
+    }, []);
 
     useImperativeHandle(
       ref,
@@ -533,24 +501,24 @@ const Gravity = forwardRef<GravityRef, GravityProps>(
         reset,
       }),
       [startEngine, stopEngine]
-    )
+    );
 
     useEffect(() => {
-      if (!resetOnResize) return
+      if (!resetOnResize) return;
 
-      const debouncedResize = debounce(handleResize, 500)
-      window.addEventListener("resize", debouncedResize)
+      const debouncedResize = debounce(handleResize, 500);
+      window.addEventListener("resize", debouncedResize);
 
       return () => {
-        window.removeEventListener("resize", debouncedResize)
-        debouncedResize.cancel()
-      }
-    }, [handleResize, resetOnResize])
+        window.removeEventListener("resize", debouncedResize);
+        debouncedResize.cancel();
+      };
+    }, [handleResize, resetOnResize]);
 
     useEffect(() => {
-      initializeRenderer()
-      return clearRenderer
-    }, [initializeRenderer, clearRenderer])
+      initializeRenderer();
+      return clearRenderer;
+    }, [initializeRenderer, clearRenderer]);
 
     return (
       <GravityContext.Provider value={{ registerElement, unregisterElement }}>
@@ -562,9 +530,9 @@ const Gravity = forwardRef<GravityRef, GravityProps>(
           {children}
         </div>
       </GravityContext.Provider>
-    )
+    );
   }
-)
+);
 
-Gravity.displayName = "Gravity"
-export { Gravity, MatterBody }
+Gravity.displayName = "Gravity";
+export { Gravity, MatterBody };

@@ -1,4 +1,3 @@
-
 import React from "react";
 import { cn } from "../../lib/utils";
 import createGlobe from "cobe";
@@ -13,8 +12,7 @@ export function FeaturesSectionWithBentoGrid() {
       description:
         "Instantly identify missing industry keywords that are preventing your profile from showing up in recruiter searches.",
       skeleton: <SkeletonOne />,
-      className:
-        "col-span-1 md:col-span-4 lg:col-span-4 border-b md:border-r border-slate-100",
+      className: "col-span-1 md:col-span-4 lg:col-span-4 border-b md:border-r border-slate-100",
     },
     {
       title: "Visual Brand Analytics",
@@ -28,8 +26,7 @@ export function FeaturesSectionWithBentoGrid() {
       description:
         "Learn how to master the STAR method and transform generic bullets into high-impact achievement statements.",
       skeleton: <SkeletonThree />,
-      className:
-        "col-span-1 md:col-span-3 lg:col-span-3 border-b md:border-r border-slate-100",
+      className: "col-span-1 md:col-span-3 lg:col-span-3 border-b md:border-r border-slate-100",
     },
     {
       title: "Global Career Deployment",
@@ -47,7 +44,8 @@ export function FeaturesSectionWithBentoGrid() {
         </h4>
 
         <p className="text-sm lg:text-base max-w-2xl my-4 mx-auto text-slate-500 text-center font-medium">
-          From semantic resume analysis to LinkedIn brand strategy, our engine handles the complexity of the modern job market.
+          From semantic resume analysis to LinkedIn brand strategy, our engine handles the
+          complexity of the modern job market.
         </p>
       </div>
 
@@ -76,7 +74,12 @@ const FeatureCard = ({
   className?: string;
 }) => {
   return (
-    <div className={cn(`p-6 sm:p-10 relative overflow-hidden transition-all hover:bg-slate-50/50`, className)}>
+    <div
+      className={cn(
+        `p-6 sm:p-10 relative overflow-hidden transition-all hover:bg-slate-50/50`,
+        className
+      )}
+    >
       {children}
     </div>
   );
