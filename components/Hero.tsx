@@ -1,12 +1,11 @@
-
 "use client";
 
 import React, { useEffect } from "react";
-import { Plus } from "lucide-react"; 
+import { Plus } from "lucide-react";
 import { renderCanvas, ShineBorder, TypeWriter } from "./ui/hero-designali";
 import { GravitySection } from "./GravitySection";
 import { FeaturesSectionWithBentoGrid } from "./ui/feature-section-with-bento-grid";
-import { Button } from "./ui/button"; 
+import { Button } from "./ui/button";
 import { AppView } from "../types";
 
 interface HeroProps {
@@ -31,7 +30,7 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
     <main className="overflow-hidden relative">
       <section id="home" className="min-h-[85vh] flex flex-col items-center justify-center">
         <div className="absolute inset-0 max-md:hidden top-[200px] -z-10 h-[400px] w-full bg-transparent bg-[linear-gradient(to_right,#4F46E5_1px,transparent_1px),linear-gradient(to_bottom,#4F46E5_1px,transparent_1px)] bg-[size:3rem_3rem] opacity-[0.05] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]"></div>
-        
+
         <div className="flex flex-col items-center justify-center px-6 text-center">
           <div className="mb-6 mt-10 sm:justify-center animate-fade-up">
             <div className="relative flex items-center rounded-full border bg-white/50 backdrop-blur-sm px-4 py-1.5 text-xs font-bold text-[#4F46E5] uppercase tracking-wider">
@@ -41,14 +40,26 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
           </div>
 
           <div className="mx-auto max-w-5xl">
-            <div className="relative mx-auto h-full bg-background/20 border border-slate-100 rounded-[3rem] py-12 p-8 shadow-2xl backdrop-blur-sm [mask-image:radial-gradient(800rem_96rem_at_center,white,transparent)] animate-fade-up stagger-1">
-              <h1 className="flex flex-col text-center text-5xl font-black leading-none tracking-tight md:text-8xl lg:text-8xl text-slate-900">
-                <Plus strokeWidth={4} className="text-[#4F46E5] absolute -left-5 -top-5 h-10 w-10" />
-                <Plus strokeWidth={4} className="text-[#4F46E5] absolute -bottom-5 -left-5 h-10 w-10" />
-                <Plus strokeWidth={4} className="text-[#4F46E5] absolute -right-5 -top-5 h-10 w-10" />
-                <Plus strokeWidth={4} className="text-[#4F46E5] absolute -bottom-5 -right-5 h-10 w-10" />
+            <div className="relative mx-auto h-full bg-background/20 border border-slate-100 rounded-2xl sm:rounded-[3rem] py-8 sm:py-12 px-4 sm:p-8 shadow-2xl backdrop-blur-sm [mask-image:radial-gradient(800rem_96rem_at_center,white,transparent)] animate-fade-up stagger-1">
+              <h1 className="flex flex-col text-center text-3xl sm:text-5xl font-black leading-tight sm:leading-none tracking-tight md:text-8xl lg:text-8xl text-slate-900">
+                <Plus
+                  strokeWidth={4}
+                  className="text-[#4F46E5] hidden sm:block absolute -left-5 -top-5 h-10 w-10"
+                />
+                <Plus
+                  strokeWidth={4}
+                  className="text-[#4F46E5] hidden sm:block absolute -bottom-5 -left-5 h-10 w-10"
+                />
+                <Plus
+                  strokeWidth={4}
+                  className="text-[#4F46E5] hidden sm:block absolute -right-5 -top-5 h-10 w-10"
+                />
+                <Plus
+                  strokeWidth={4}
+                  className="text-[#4F46E5] hidden sm:block absolute -bottom-5 -right-5 h-10 w-10"
+                />
                 <span>
-                  Your complete platform for <br/>
+                  Your complete platform for <br />
                   <span className="text-[#4F46E5] italic">Career Excellence.</span>
                 </span>
               </h1>
@@ -62,36 +73,27 @@ export const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
               I craft high-impact profiles for top-tier talent, leveraging Gemini AI to power your{" "}
               <span className="text-[#0077B5] font-bold">
                 <TypeWriter strings={talkAbout} />
-              </span>.
+              </span>
+              .
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mt-8 animate-fade-up stagger-4">
-              <div onClick={() => onNavigate('resume')}>
-                <ShineBorder
-                  borderWidth={3}
-                  borderRadius={16}
-                  className="border cursor-pointer h-auto w-auto p-1 bg-white/5 backdrop-blur-md"
-                  color={["#4F46E5", "#0077B5", "#10B981"]}
-                >
-                  <Button className="w-48 h-14 rounded-xl text-lg font-black uppercase tracking-widest shadow-xl shadow-indigo-100">
-                    Optimize Resume
-                  </Button>
-                </ShineBorder>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8 w-full sm:w-auto animate-fade-up stagger-4 px-4 sm:px-0">
+              <div onClick={() => onNavigate("resume")} className="w-full sm:w-auto">
+                <Button className="w-full sm:w-auto px-6 sm:px-8 py-3 h-auto rounded-full text-xs sm:text-sm font-black uppercase tracking-widest shadow-lg bg-indigo-600 hover:bg-indigo-700 text-white transition-all">
+                  Optimize Resume
+                </Button>
               </div>
-              <Button 
-                variant="outline" 
-                onClick={() => onNavigate('linkedin')}
-                className="w-48 h-14 rounded-xl text-lg font-black uppercase tracking-widest border-2 hover:bg-slate-50 transition-all"
+              <Button
+                variant="outline"
+                onClick={() => onNavigate("linkedin")}
+                className="w-full sm:w-auto px-6 sm:px-8 py-3 h-auto rounded-full text-xs sm:text-sm font-black uppercase tracking-widest border-2 border-slate-900 text-slate-900 hover:bg-slate-50 transition-all"
               >
                 LinkedIn Brand
               </Button>
             </div>
           </div>
         </div>
-        <canvas
-          className="pointer-events-none absolute inset-0 mx-auto"
-          id="canvas"
-        ></canvas>
+        <canvas className="pointer-events-none absolute inset-0 mx-auto" id="canvas"></canvas>
       </section>
 
       {/* Integrated Gravity Section */}

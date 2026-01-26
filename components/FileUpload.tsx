@@ -1,6 +1,5 @@
-
-import React, { useRef } from 'react';
-import { Icons } from '../constants';
+import React, { useRef } from "react";
+import { Icons } from "../constants";
 
 interface FileUploadProps {
   label: string;
@@ -10,7 +9,13 @@ interface FileUploadProps {
   accept?: string;
 }
 
-export const FileUpload: React.FC<FileUploadProps> = ({ label, id, onFileSelect, selectedFile, accept = ".pdf" }) => {
+export const FileUpload: React.FC<FileUploadProps> = ({
+  label,
+  id,
+  onFileSelect,
+  selectedFile,
+  accept = ".pdf",
+}) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleClick = () => {
@@ -27,28 +32,34 @@ export const FileUpload: React.FC<FileUploadProps> = ({ label, id, onFileSelect,
   return (
     <div className="flex flex-col gap-2">
       <label className="text-sm font-semibold text-slate-700">{label}</label>
-      <div 
+      <div
         onClick={handleClick}
-        className={`relative group flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-8 cursor-pointer transition-all duration-200 
-          ${selectedFile 
-            ? 'border-indigo-400 bg-indigo-50/30' 
-            : 'border-slate-300 hover:border-indigo-400 hover:bg-slate-50'}`}
+        className={`relative group flex flex-col items-center justify-center border-2 border-dashed rounded-lg sm:rounded-xl p-6 sm:p-8 cursor-pointer transition-all duration-200 
+          ${
+            selectedFile
+              ? "border-indigo-400 bg-indigo-50/30"
+              : "border-slate-300 hover:border-indigo-400 hover:bg-slate-50"
+          }`}
       >
-        <input 
+        <input
           ref={inputRef}
-          type="file" 
+          type="file"
           id={id}
           className="hidden"
           accept={accept}
           onChange={handleFileChange}
         />
-        
-        <div className={`p-3 rounded-full mb-3 transition-colors ${selectedFile ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-500'}`}>
+
+        <div
+          className={`p-3 rounded-full mb-3 transition-colors ${selectedFile ? "bg-indigo-100 text-indigo-600" : "bg-slate-100 text-slate-500"}`}
+        >
           {selectedFile ? <Icons.Check /> : <Icons.Upload />}
         </div>
-        
-        <span className={`text-sm font-medium ${selectedFile ? 'text-indigo-700' : 'text-slate-600'}`}>
-          {selectedFile ? selectedFile.name : 'Click to upload PDF'}
+
+        <span
+          className={`text-sm font-medium ${selectedFile ? "text-indigo-700" : "text-slate-600"}`}
+        >
+          {selectedFile ? selectedFile.name : "Click to upload PDF"}
         </span>
         <p className="text-xs text-slate-400 mt-1">PDF file up to 10MB</p>
       </div>

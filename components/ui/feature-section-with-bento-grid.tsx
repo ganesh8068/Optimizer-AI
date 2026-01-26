@@ -12,7 +12,8 @@ export function FeaturesSectionWithBentoGrid() {
       description:
         "Instantly identify missing industry keywords that are preventing your profile from showing up in recruiter searches.",
       skeleton: <SkeletonOne />,
-      className: "col-span-1 md:col-span-4 lg:col-span-4 border-b md:border-r border-slate-100",
+      className:
+        "col-span-1 md:col-span-4 lg:col-span-4 border-b md:border-r border-slate-100",
     },
     {
       title: "Visual Brand Analytics",
@@ -26,7 +27,8 @@ export function FeaturesSectionWithBentoGrid() {
       description:
         "Learn how to master the STAR method and transform generic bullets into high-impact achievement statements.",
       skeleton: <SkeletonThree />,
-      className: "col-span-1 md:col-span-3 lg:col-span-3 border-b md:border-r border-slate-100",
+      className:
+        "col-span-1 md:col-span-3 lg:col-span-3 border-b md:border-r border-slate-100",
     },
     {
       title: "Global Career Deployment",
@@ -44,21 +46,18 @@ export function FeaturesSectionWithBentoGrid() {
         </h4>
 
         <p className="text-sm lg:text-base max-w-2xl my-4 mx-auto text-slate-500 text-center font-medium">
-          From semantic resume analysis to LinkedIn brand strategy, our engine handles the
-          complexity of the modern job market.
+          From semantic resume analysis to LinkedIn brand strategy, our engine handles the complexity of the modern job market.
         </p>
       </div>
 
       <div className="relative">
         <div className="grid grid-cols-1 md:grid-cols-6 lg:grid-cols-6 mt-12 bg-white rounded-3xl border border-slate-100 shadow-xl overflow-hidden">
           {features.map((feature) => (
-            <div key={feature.title}>
-              <FeatureCard className={feature.className}>
-                <FeatureTitle>{feature.title}</FeatureTitle>
-                <FeatureDescription>{feature.description}</FeatureDescription>
-                <div className="h-full w-full">{feature.skeleton}</div>
-              </FeatureCard>
-            </div>
+            <FeatureCard className={feature.className}>
+              <FeatureTitle>{feature.title}</FeatureTitle>
+              <FeatureDescription>{feature.description}</FeatureDescription>
+              <div className="h-full w-full">{feature.skeleton}</div>
+            </FeatureCard>
           ))}
         </div>
       </div>
@@ -74,12 +73,7 @@ const FeatureCard = ({
   className?: string;
 }) => {
   return (
-    <div
-      className={cn(
-        `p-6 sm:p-10 relative overflow-hidden transition-all hover:bg-slate-50/50`,
-        className
-      )}
-    >
+    <div className={cn(`p-6 sm:p-10 relative overflow-hidden transition-all hover:bg-slate-50/50`, className)}>
       {children}
     </div>
   );
@@ -265,7 +259,7 @@ export const Globe = ({ className }: { className?: string }) => {
   return (
     <canvas
       ref={canvasRef}
-      style={{ width: 600, height: 600, maxWidth: "100%", aspectRatio: 1 }}
+      style={{ width: 900, height: 600, maxWidth: "100%", aspectRatio: 1 }}
       className={className}
     />
   );
