@@ -1,0 +1,37 @@
+{
+  "name": "linkedin-&-resume-optimizer-ai",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "npm run build && node server.js"
+  },
+  "dependencies": {
+    "@google/genai": "^1.38.0",
+    "@radix-ui/react-slot": "^1.2.4",
+    "@tabler/icons-react": "^3.21.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "cobe": "^0.6.3",
+    "express": "^5.2.1",
+    "framer-motion": "^11.11.11",
+    "lodash": "^4.17.21",
+    "lucide-react": "^0.563.0",
+    "matter-js": "^0.19.0",
+    "poly-decomp": "^0.3.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "react-typed": "^2.0.12",
+    "svg-path-commander": "^0.1.13",
+    "tailwind-merge": "^3.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.0"
+  }
+}

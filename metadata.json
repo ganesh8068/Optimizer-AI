@@ -1,0 +1,5 @@
+{
+  "name": "LinkedIn & Resume Optimizer AI",
+  "description": "A high-performance career optimization tool that uses Gemini AI to analyze resumes and LinkedIn profiles, providing ATS-friendly rewrites and career coaching insights.",
+  "requestFramePermissions": []
+}
