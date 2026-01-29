@@ -36,4 +36,4 @@ export interface UploadedFiles {
   linkedinProfile: File | null;
 }
 
-export type AppView = 'home' | 'resume' | 'linkedin' | 'about';
+export type AppView = 'home' | 'resume' | 'linkedin' | 'about' | 'roadmap';

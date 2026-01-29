@@ -1,9 +1,11 @@
 import React, { useState } from "react";
+import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { FileUpload } from "./components/FileUpload";
 import { ResultsView } from "./components/ResultsView";
 import { LinkedInResultsView } from "./components/LinkedInResultsView";
 import { Hero } from "./components/Hero";
 import AboutPage from "./components/ui/about-page";
+import RoadmapPage from "./components/ui/roadmap-page";
 import {
   ExperienceLevel,
   UploadedFiles,
@@ -17,7 +19,9 @@ import { Twitter, Linkedin, Github, Mail, Menu, X } from "lucide-react";
 import { Icons } from "./constants";
 
 const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState<AppView>("home");
+  const navigate = useNavigate();
+  const location = useLocation();
+  const currentView = location.pathname === "/" ? "home" : location.pathname.substring(1);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [files, setFiles] = useState<UploadedFiles>({ resume: null, linkedinProfile: null });
   const [jobRole, setJobRole] = useState("");
@@ -82,7 +86,7 @@ const App: React.FC = () => {
 
   const navigateTo = (view: AppView) => {
     resetState();
-    setCurrentView(view);
+    navigate(view === 'home' ? '/' : `/${view}`);
     setIsMenuOpen(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -104,7 +108,7 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-white selection:bg-indigo-100 antialiased font-sans">
       {/* Navbar */}
-      <nav className="bg-white/80 backdrop-blur-md px-4 sm:px-8 py-4 sticky top-0 z-50 border-b border-slate-50">
+      <nav className="bg-white/80 backdrop-blur-md px-4 sm:px-8 py-4 fixed top-0 left-0 right-0 z-50 border-b border-slate-50 shadow-sm">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div
             className="flex items-center gap-2 sm:gap-4 cursor-pointer group"
@@ -133,11 +137,18 @@ const App: React.FC = () => {
               LinkedIn
             </button>
             <button
+              onClick={() => navigateTo("roadmap")}
+              className={`px-4 md:px-6 py-2 text-[10px] md:text-xs font-black uppercase tracking-widest rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 ${currentView === "roadmap" ? "bg-amber-500 text-white shadow-lg shadow-amber-100" : "text-slate-400 hover:text-amber-600"}`}
+            >
+              Roadmap
+            </button>
+            <button
               onClick={() => navigateTo("about")}
               className={`px-4 md:px-6 py-2 text-[10px] md:text-xs font-black uppercase tracking-widest rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 ${currentView === "about" ? "bg-slate-900 text-white shadow-lg" : "text-slate-400 hover:text-slate-900"}`}
             >
               About
             </button>
+            
           </div>
 
           {/* Mobile Hamburger Button */}
@@ -170,195 +181,198 @@ const App: React.FC = () => {
             >
               About
             </button>
+            <button
+              onClick={() => navigateTo("roadmap")}
+              className={`w-full px-4 py-3 text-sm font-black uppercase tracking-widest rounded-lg transition-all duration-300 ${currentView === "roadmap" ? "bg-amber-500 text-white shadow-lg shadow-amber-100" : "text-slate-600 hover:bg-slate-50 border border-slate-100"}`}
+            >
+              Roadmap
+            </button>
           </div>
         )}
       </nav>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 overflow-hidden min-h-[80vh]">
-        {/* HOME PAGE */}
-        {currentView === "home" && <Hero onNavigate={navigateTo} />}
-
-        {/* ABOUT PAGE */}
-        {currentView === "about" && <AboutPage />}
-
-        {/* RESUME VIEW */}
-        {currentView === "resume" && !resumeResult && (
-          <div className="max-w-5xl mx-auto opacity-0 animate-fade-up px-4 sm:px-0">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#1E293B] mb-8 sm:mb-12 text-center tracking-tight uppercase">
-              ATS Resume Optimization
-            </h2>
-            <div className="bg-white p-1 relative overflow-hidden rounded-lg">
-              <div className="p-6 sm:p-8 md:p-12 space-y-8 sm:space-y-12">
-                <FileUpload
-                  label="Upload Resume (PDF)"
-                  id="res-up"
-                  onFileSelect={(f) => setFiles((prev) => ({ ...prev, resume: f }))}
-                  selectedFile={files.resume}
-                />
-
-                <div className="space-y-10">
-                  <div className="flex flex-col gap-3 group">
-                    <label className="text-[9px] sm:text-[11px] font-black text-slate-400 uppercase tracking-widest transition-colors group-focus-within:text-[#4F46E5]">
-                      Target Job Title
-                    </label>
-                    <input
-                      type="text"
-                      value={jobRole}
-                      onChange={(e) => setJobRole(e.target.value)}
-                      placeholder="e.g. Senior Software Engineer"
-                      className="w-full px-4 sm:px-7 py-4 sm:py-5 rounded-xl sm:rounded-2xl bg-[#f8f9fa] text-slate-800 border-2 border-slate-100 focus:border-[#4F46E5] focus:bg-white transition-all outline-none font-bold text-base sm:text-lg placeholder:text-slate-400 shadow-sm tracking-wide"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-3">
-                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
-                      Experience Level
-                    </label>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      {Object.values(ExperienceLevel).map((l, i) => (
-                        <button
-                          key={l}
-                          onClick={() => setExpLevel(l)}
-                          className={`px-5 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 transition-all duration-300 hover:scale-[1.02] active:scale-95 ${expLevel === l ? "bg-[#4F46E5] text-white border-[#4F46E5] shadow-lg shadow-indigo-100" : "bg-white border-slate-50 text-slate-400 hover:border-slate-200"}`}
-                        >
-                          {l.split(" / ")[0]}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-8 px-2">
-                  <div className="p-6 rounded-[1.5rem] border-2 border-[#BFDBFE] bg-white transition-all hover:border-[#4F46E5]/30">
-                    <button
-                      disabled={loading || !files.resume || !jobRole}
-                      onClick={handleResumeOptimize}
-                      className={`w-full py-6 rounded-xl font-black text-xl flex justify-center items-center gap-3 transition-all duration-500 active:scale-[0.98] ${loading ? "bg-slate-800 text-white cursor-wait" : "bg-[#4F46E5] text-white hover:bg-[#3730A3] shadow-lg shadow-indigo-100/50 hover:shadow-indigo-300/50 shimmer"} disabled:opacity-50 disabled:cursor-not-allowed`}
-                    >
-                      {loading ? (
-                        <span className="flex items-center gap-2">
-                          <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                            <circle
-                              className="opacity-25"
-                              cx="12"
-                              cy="12"
-                              r="10"
-                              stroke="currentColor"
-                              strokeWidth="4"
-                              fill="none"
-                            ></circle>
-                            <path
-                              className="opacity-75"
-                              fill="currentColor"
-                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                            ></path>
-                          </svg>
-                          Analyzing Profile...
-                        </span>
-                      ) : (
-                        "Generate Resume Report"
-                      )}
-                    </button>
-                  </div>
-                  {error && (
-                    <p className="mt-4 text-center text-rose-500 text-xs font-bold animate-pulse">
-                      {error}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-        {resumeResult && currentView === "resume" && <ResultsView data={resumeResult} />}
-
-        {/* LINKEDIN VIEW */}
-        {currentView === "linkedin" && !linkedinResult && (
-          <div className="max-w-5xl mx-auto opacity-0 animate-fade-up">
-            <h2 className="text-5xl font-black text-[#1E293B] mb-12 text-center tracking-tight uppercase">
-              LinkedIn Profile Optimizer
-            </h2>
-            <div className="bg-white p-1">
-              <div className="p-8 md:p-12 space-y-12">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="opacity-0 animate-fade-up stagger-1">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 overflow-hidden min-h-[80vh] pt-24 sm:pt-28">
+        <Routes>
+          <Route path="/" element={<Hero onNavigate={navigateTo} />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/roadmap" element={<RoadmapPage />} />
+          <Route path="/resume" element={
+            !resumeResult ? (
+              <div className="max-w-5xl mx-auto opacity-0 animate-fade-up px-4 sm:px-0">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#1E293B] mb-8 sm:mb-12 text-center tracking-tight uppercase">
+                  ATS Resume Optimization
+                </h2>
+                <div className="bg-white p-1 relative overflow-hidden rounded-lg">
+                  <div className="p-6 sm:p-8 md:p-12 space-y-8 sm:space-y-12">
                     <FileUpload
-                      label="Upload Latest Resume (PDF)"
-                      id="li-resume-up"
+                      label="Upload Resume (PDF)"
+                      id="res-up"
                       onFileSelect={(f) => setFiles((prev) => ({ ...prev, resume: f }))}
                       selectedFile={files.resume}
                     />
-                  </div>
-                  <div className="opacity-0 animate-fade-up stagger-2">
-                    <FileUpload
-                      label="Current LinkedIn Profile (PDF)"
-                      id="li-profile-up"
-                      onFileSelect={(f) => setFiles((prev) => ({ ...prev, linkedinProfile: f }))}
-                      selectedFile={files.linkedinProfile}
-                    />
-                  </div>
-                </div>
 
-                <div className="space-y-10 opacity-0 animate-fade-up stagger-3">
-                  <div className="flex flex-col gap-3 group">
-                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest transition-colors group-focus-within:text-[#0077B5]">
-                      Desired Professional Identity
-                    </label>
-                    <input
-                      type="text"
-                      value={jobRole}
-                      onChange={(e) => setJobRole(e.target.value)}
-                      placeholder="e.g. Marketing Executive & Content Strategist"
-                      className="w-full px-7 py-5 rounded-2xl bg-[#f8f9fa] text-slate-800 border-2 border-slate-100 focus:border-[#0077B5] focus:bg-white transition-all outline-none font-bold text-lg placeholder:text-slate-400 shadow-sm tracking-wide"
-                    />
-                  </div>
-                </div>
+                    <div className="space-y-10">
+                      <div className="flex flex-col gap-3 group">
+                        <label className="text-[9px] sm:text-[11px] font-black text-slate-400 uppercase tracking-widest transition-colors group-focus-within:text-[#4F46E5]">
+                          Target Job Title
+                        </label>
+                        <input
+                          type="text"
+                          value={jobRole}
+                          onChange={(e) => setJobRole(e.target.value)}
+                          placeholder="e.g. Senior Software Engineer"
+                          className="w-full px-4 sm:px-7 py-4 sm:py-5 rounded-xl sm:rounded-2xl bg-[#f8f9fa] text-slate-800 border-2 border-slate-100 focus:border-[#4F46E5] focus:bg-white transition-all outline-none font-bold text-base sm:text-lg placeholder:text-slate-400 shadow-sm tracking-wide"
+                        />
+                      </div>
 
-                <div className="pt-8 px-2 opacity-0 animate-fade-up stagger-4">
-                  <div className="p-6 rounded-[1.5rem] border-2 border-[#BFDBFE] bg-white transition-all hover:border-[#0077B5]/30">
-                    <button
-                      disabled={loading || !files.resume || !files.linkedinProfile || !jobRole}
-                      onClick={handleLinkedInOptimize}
-                      className={`w-full py-6 rounded-xl font-black text-xl flex justify-center items-center gap-3 transition-all duration-500 active:scale-[0.98] ${loading ? "bg-slate-800 text-white cursor-wait" : "bg-[#0077B5] text-white hover:bg-[#005E93] shadow-lg shadow-blue-100/50 hover:shadow-blue-300/50 shimmer"} disabled:opacity-50 disabled:cursor-not-allowed`}
-                    >
-                      {loading ? (
-                        <span className="flex items-center gap-2">
-                          <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                            <circle
-                              className="opacity-25"
-                              cx="12"
-                              cy="12"
-                              r="10"
-                              stroke="currentColor"
-                              strokeWidth="4"
-                              fill="none"
-                            ></circle>
-                            <path
-                              className="opacity-75"
-                              fill="currentColor"
-                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                            ></path>
-                          </svg>
-                          Refining Profile...
-                        </span>
-                      ) : (
-                        "Optimize LinkedIn Identity"
+                      <div className="flex flex-col gap-3">
+                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                          Experience Level
+                        </label>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                          {Object.values(ExperienceLevel).map((l, i) => (
+                            <button
+                              key={l}
+                              onClick={() => setExpLevel(l)}
+                              className={`px-5 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 transition-all duration-300 hover:scale-[1.02] active:scale-95 ${expLevel === l ? "bg-[#4F46E5] text-white border-[#4F46E5] shadow-lg shadow-indigo-100" : "bg-white border-slate-50 text-slate-400 hover:border-slate-200"}`}
+                            >
+                              {l.split(" / ")[0]}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-8 px-2">
+                      <div className="p-6 rounded-[1.5rem] border-2 border-[#BFDBFE] bg-white transition-all hover:border-[#4F46E5]/30">
+                        <button
+                          disabled={loading || !files.resume || !jobRole}
+                          onClick={handleResumeOptimize}
+                          className={`w-full py-6 rounded-xl font-black text-xl flex justify-center items-center gap-3 transition-all duration-500 active:scale-[0.98] ${loading ? "bg-slate-800 text-white cursor-wait" : "bg-[#4F46E5] text-white hover:bg-[#3730A3] shadow-lg shadow-indigo-100/50 hover:shadow-indigo-300/50 shimmer"} disabled:opacity-50 disabled:cursor-not-allowed`}
+                        >
+                          {loading ? (
+                            <span className="flex items-center gap-2">
+                              <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                                <circle
+                                  className="opacity-25"
+                                  cx="12"
+                                  cy="12"
+                                  r="10"
+                                  stroke="currentColor"
+                                  strokeWidth="4"
+                                  fill="none"
+                                ></circle>
+                                <path
+                                  className="opacity-75"
+                                  fill="currentColor"
+                                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                ></path>
+                              </svg>
+                              Analyzing Profile...
+                            </span>
+                          ) : (
+                            "Generate Resume Report"
+                          )}
+                        </button>
+                      </div>
+                      {error && (
+                        <p className="mt-4 text-center text-rose-500 text-xs font-bold animate-pulse">
+                          {error}
+                        </p>
                       )}
-                    </button>
+                    </div>
                   </div>
-                  {error && (
-                    <p className="mt-4 text-center text-rose-500 text-xs font-bold animate-pulse">
-                      {error}
-                    </p>
-                  )}
                 </div>
               </div>
-            </div>
-          </div>
-        )}
-        {linkedinResult && currentView === "linkedin" && (
-          <LinkedInResultsView data={linkedinResult} />
-        )}
+            ) : <ResultsView data={resumeResult} />
+          } />
+
+          <Route path="/linkedin" element={
+            !linkedinResult ? (
+              <div className="max-w-5xl mx-auto opacity-0 animate-fade-up">
+                <h2 className="text-5xl font-black text-[#1E293B] mb-12 text-center tracking-tight uppercase">
+                  LinkedIn Profile Optimizer
+                </h2>
+                <div className="bg-white p-1">
+                  <div className="p-8 md:p-12 space-y-12">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="opacity-0 animate-fade-up stagger-1">
+                        <FileUpload
+                          label="Upload Latest Resume (PDF)"
+                          id="li-resume-up"
+                          onFileSelect={(f) => setFiles((prev) => ({ ...prev, resume: f }))}
+                          selectedFile={files.resume}
+                        />
+                      </div>
+                      <div className="opacity-0 animate-fade-up stagger-2">
+                        <FileUpload
+                          label="Current LinkedIn Profile (PDF)"
+                          id="li-profile-up"
+                          onFileSelect={(f) => setFiles((prev) => ({ ...prev, linkedinProfile: f }))}
+                          selectedFile={files.linkedinProfile}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-10 opacity-0 animate-fade-up stagger-3">
+                      <div className="flex flex-col gap-3 group">
+                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest transition-colors group-focus-within:text-[#0077B5]">
+                          Desired Professional Identity
+                        </label>
+                        <input
+                          type="text"
+                          value={jobRole}
+                          onChange={(e) => setJobRole(e.target.value)}
+                          placeholder="e.g. Marketing Executive & Content Strategist"
+                          className="w-full px-7 py-5 rounded-2xl bg-[#f8f9fa] text-slate-800 border-2 border-slate-100 focus:border-[#0077B5] focus:bg-white transition-all outline-none font-bold text-lg placeholder:text-slate-400 shadow-sm tracking-wide"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="pt-8 px-2 opacity-0 animate-fade-up stagger-4">
+                      <div className="p-6 rounded-[1.5rem] border-2 border-[#BFDBFE] bg-white transition-all hover:border-[#0077B5]/30">
+                        <button
+                          disabled={loading || !files.resume || !files.linkedinProfile || !jobRole}
+                          onClick={handleLinkedInOptimize}
+                          className={`w-full py-6 rounded-xl font-black text-xl flex justify-center items-center gap-3 transition-all duration-500 active:scale-[0.98] ${loading ? "bg-slate-800 text-white cursor-wait" : "bg-[#0077B5] text-white hover:bg-[#005E93] shadow-lg shadow-blue-100/50 hover:shadow-blue-300/50 shimmer"} disabled:opacity-50 disabled:cursor-not-allowed`}
+                        >
+                          {loading ? (
+                            <span className="flex items-center gap-2">
+                              <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                                <circle
+                                  className="opacity-25"
+                                  cx="12"
+                                  cy="12"
+                                  r="10"
+                                  stroke="currentColor"
+                                  strokeWidth="4"
+                                  fill="none"
+                                ></circle>
+                                <path
+                                  className="opacity-75"
+                                  fill="currentColor"
+                                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                ></path>
+                              </svg>
+                              Refining Profile...
+                            </span>
+                          ) : (
+                            "Optimize LinkedIn Identity"
+                          )}
+                        </button>
+                      </div>
+                      {error && (
+                        <p className="mt-4 text-center text-rose-500 text-xs font-bold animate-pulse">
+                          {error}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : <LinkedInResultsView data={linkedinResult} />
+          } />
+        </Routes>
       </main>
 
       <Footer

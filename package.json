@@ -17,7 +17,7 @@
     "clsx": "^2.1.1",
     "cobe": "^0.6.3",
     "express": "^5.2.1",
-    "framer-motion": "^11.11.11",
+    "framer-motion": "^11.18.2",
     "lodash": "^4.17.21",
     "lucide-react": "^0.563.0",
     "matter-js": "^0.19.0",
@@ -25,6 +25,7 @@
     "poly-decomp": "^0.3.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
+    "react-router-dom": "^7.13.0",
     "react-typed": "^2.0.12",
     "svg-path-commander": "^0.1.13",
     "tailwind-merge": "^3.4.0"
