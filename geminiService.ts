@@ -1,5 +1,5 @@
 
-import { GoogleGenAI, Type } from "@google/genai";
+import OpenAI from "openai";
 import { AnalysisResult, LinkedInAnalysisResult, ExperienceLevel } from "./types";
 
 const RESUME_PROMPT = (jobRole: string, expLevel: string) => `
@@ -30,52 +30,64 @@ The output must be JSON with:
 - networkingAdvice: (Short advice on how to bridge the gap between their current brand and the target identity)
 `;
 
+const cleanJson = (text: string): string => {
+  return text.replace(/```json\n?|\n?```/g, "").trim();
+}
+
 export async function analyzeResume(
   resumeBase64: string,
   jobRole: string,
   expLevel: ExperienceLevel
 ): Promise<AnalysisResult> {
-  // Use gemini-1.5-flash for complex reasoning tasks like resume optimization
-  const ai = new GoogleGenAI({ apiKey: (import.meta.env as any).VITE_GEMINI_API_KEY });
-  const response = await ai.models.generateContent({
-    model: 'gemini-1.5-flash',
-    contents: {
-      parts: [
-        { inlineData: { mimeType: 'application/pdf', data: resumeBase64 } },
-        { text: RESUME_PROMPT(jobRole, expLevel) }
-      ]
-    },
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          scores: {
-            type: Type.OBJECT,
-            properties: {
-              resume: { type: Type.NUMBER },
-              atsCompatibility: { type: Type.NUMBER },
-              readability: { type: Type.NUMBER }
-            },
-            required: ['resume', 'atsCompatibility', 'readability']
-          },
-          resumeAnalysis: {
-            type: Type.OBJECT,
-            properties: {
-              feedback: { type: Type.ARRAY, items: { type: Type.STRING } },
-              rewrittenContent: { type: Type.STRING },
-              starBullets: { type: Type.ARRAY, items: { type: Type.STRING } }
-            },
-            required: ['feedback', 'rewrittenContent', 'starBullets']
-          },
-          suggestedKeywords: { type: Type.ARRAY, items: { type: Type.STRING } },
-          roleGaps: { type: Type.ARRAY, items: { type: Type.STRING } }
-        },
-        required: ['scores', 'resumeAnalysis', 'suggestedKeywords', 'roleGaps']
-      }
+  const client = new OpenAI({
+    apiKey: (import.meta.env as any).VITE_OPENAI_API_KEY,
+    baseURL: "https://openrouter.ai/api/v1",
+    dangerouslyAllowBrowser: true,
+    defaultHeaders: {
+      "HTTP-Referer": typeof window !== 'undefined' ? window.location.origin : "",
+      "X-Title": "Optimizer AI",
     }
   });
-  return JSON.parse(response.text || "{}");
+
+  const response = await client.chat.completions.create({
+    model: "google/gemma-3-12b-it:free",
+    messages: [
+      {
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: RESUME_PROMPT(jobRole, expLevel)
+          },
+          {
+            type: "image_url",
+            image_url: {
+              url: `data:application/pdf;base64,${resumeBase64}`,
+              detail: "high"
+            }
+          }
+        ]
+      }
+    ],
+    temperature: 1
+  });
+
+   console.log("OpenAI API Response:", JSON.stringify(response, null, 2));
+
+  if (!response.choices || response.choices.length === 0) {
+    throw new Error("API returned no choices. Please try again.");
+  }
+
+  const textContent = response.choices[0]?.message?.content;
+  if (textContent) {
+    try {
+      return JSON.parse(cleanJson(textContent));
+    } catch (e) {
+      console.error("JSON Parse Error:", e, textContent);
+      throw new Error("Failed to parse resume analysis result");
+    }
+  }
+  throw new Error("Failed to generate resume analysis");
 }
 
 export async function analyzeLinkedIn(
@@ -83,41 +95,60 @@ export async function analyzeLinkedIn(
   linkedinBase64: string,
   jobRole: string
 ): Promise<LinkedInAnalysisResult> {
-  // Use gemini-1.5-flash for complex branding and multi-file analysis tasks
-  const ai = new GoogleGenAI({ apiKey: (import.meta.env as any).VITE_GEMINI_API_KEY });
-  const response = await ai.models.generateContent({
-    model: 'gemini-1.5-flash',
-    contents: {
-      parts: [
-        { inlineData: { mimeType: 'application/pdf', data: resumeBase64 } },
-        { inlineData: { mimeType: 'application/pdf', data: linkedinBase64 } },
-        { text: LINKEDIN_PROMPT(jobRole) }
-      ]
-    },
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          headline: { type: Type.STRING },
-          about: { type: Type.STRING },
-          experienceOptimizations: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                title: { type: Type.STRING },
-                description: { type: Type.STRING }
-              },
-              required: ['title', 'description']
-            }
-          },
-          skills: { type: Type.ARRAY, items: { type: Type.STRING } },
-          networkingAdvice: { type: Type.STRING }
-        },
-        required: ['headline', 'about', 'experienceOptimizations', 'skills', 'networkingAdvice']
-      }
+  const client = new OpenAI({
+    apiKey: (import.meta.env as any).VITE_OPENAI_API_KEY,
+    baseURL: "https://openrouter.ai/api/v1",
+    dangerouslyAllowBrowser: true,
+    defaultHeaders: {
+      "HTTP-Referer": typeof window !== 'undefined' ? window.location.origin : "",
+      "X-Title": "Optimizer AI",
     }
   });
-  return JSON.parse(response.text || "{}");
+
+  const response = await client.chat.completions.create({
+    model: "google/gemma-3-12b-it:free",
+    messages: [
+      {
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: LINKEDIN_PROMPT(jobRole)
+          },
+          {
+            type: "image_url",
+            image_url: {
+              url: `data:application/pdf;base64,${resumeBase64}`,
+              detail: "high"
+            }
+          },
+          {
+            type: "image_url",
+            image_url: {
+              url: `data:application/pdf;base64,${linkedinBase64}`,
+              detail: "high"
+            }
+          }
+        ]
+      }
+    ],
+    temperature: 1
+  });
+
+  console.log("OpenAI API Response:", JSON.stringify(response, null, 2));
+
+  if (!response.choices || response.choices.length === 0) {
+    throw new Error("API returned no choices. Please try again.");
+  }
+
+  const textContent = response.choices[0]?.message?.content;
+  if (textContent) {
+    try {
+      return JSON.parse(cleanJson(textContent));
+    } catch (e) {
+      console.error("JSON Parse Error:", e, textContent);
+      throw new Error("Failed to parse LinkedIn analysis result");
+    }
+  }
+  throw new Error("Failed to generate LinkedIn analysis");
 }
