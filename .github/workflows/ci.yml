@@ -24,16 +24,18 @@ jobs:
           node-version: 20.x
           cache: "npm"
 
-      - name: Environment Debug
+      - name: Environment Debug (Basic)
         run: |
           node --version
           npm --version
-          npx tsc --version
 
       - name: Install dependencies
         run: |
           rm -f package-lock.json
           npm install
+
+      - name: Environment Debug (Full)
+        run: npx tsc --version
 
       - name: Run TypeScript compiler check
         run: npx tsc --noEmit
@@ -65,7 +67,9 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies
-        run: rm -f package-lock.json && npm install
+        run: |
+          rm -f package-lock.json
+          npm install
 
       - name: Run npm audit
         run: npm audit --audit-level=moderate || true
@@ -89,7 +93,9 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies
-        run: rm -f package-lock.json && npm install
+        run: |
+          rm -f package-lock.json
+          npm install
 
       - name: Build application
         run: npm run build
