@@ -33,9 +33,9 @@ jobs:
         continue-on-error: true
 
       - name: Build with verbose output
-        run: npm run build -- --debug
+        run: npm run build -- --logLevel debug
         env:
-          VITE_GEMINI_API_KEY: test-key-for-ci
+          VITE_OPENAI_API_KEY: test-key-for-ci
           DEBUG: "vite:*"
         continue-on-error: true
 

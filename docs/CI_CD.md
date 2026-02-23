@@ -48,7 +48,7 @@ Set the following secrets in your GitHub repository:
 **Settings → Secrets and variables → Actions → New repository secret**
 
 ```
-VITE_GEMINI_API_KEY     # Your Google Gemini API key
+VITE_OPENAI_API_KEY     # Your OpenRouter API key
 SNYK_TOKEN              # (Optional) Snyk security scanning token
 ```
 

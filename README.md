@@ -8,9 +8,9 @@
    ```bash
    npm install
    ```
-2. Set the `VITE_GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+2. Set the `VITE_OPENAI_API_KEY` in [.env.local](.env.local) to your OpenRouter API key
    ```env
-   VITE_GEMINI_API_KEY=your_api_key_here
+   VITE_OPENAI_API_KEY=your_api_key_here
    ```
 3. Run the app:
    ```bash

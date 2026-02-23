@@ -72,7 +72,7 @@ export async function analyzeResume(
     temperature: 1
   });
 
-   console.log("OpenAI API Response:", JSON.stringify(response, null, 2));
+  console.log("OpenAI API Response:", JSON.stringify(response, null, 2));
 
   if (!response.choices || response.choices.length === 0) {
     throw new Error("API returned no choices. Please try again.");
