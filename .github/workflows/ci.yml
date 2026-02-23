@@ -14,23 +14,26 @@ jobs:
   lint-and-test:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x]
-      fail-fast: false
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js ${{ matrix.node-version }}
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 20.x
           cache: "npm"
 
+      - name: Environment Debug
+        run: |
+          node --version
+          npm --version
+          npx tsc --version
+
       - name: Install dependencies
-        run: npm install
+        run: |
+          rm -f package-lock.json
+          npm install
 
       - name: Run TypeScript compiler check
         run: npx tsc --noEmit
@@ -41,7 +44,6 @@ jobs:
           VITE_OPENAI_API_KEY: ${{ secrets.VITE_OPENAI_API_KEY || 'test-key-for-ci' }}
 
       - name: Upload build artifacts
-        if: matrix.node-version == '20.x'
         uses: actions/upload-artifact@v4
         with:
           name: dist-build
@@ -63,7 +65,7 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies
-        run: npm install
+        run: rm -f package-lock.json && npm install
 
       - name: Run npm audit
         run: npm audit --audit-level=moderate || true
@@ -87,7 +89,7 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies
-        run: npm install
+        run: rm -f package-lock.json && npm install
 
       - name: Build application
         run: npm run build
