@@ -10,6 +10,10 @@ env:
   NODE_VERSION: 20.x
   VITE_OPENAI_API_KEY: ${{ secrets.VITE_OPENAI_API_KEY || 'test-key-for-ci' }}
 
+defaults:
+  run:
+    working-directory: frontend
+
 jobs:
   lint-and-test:
     runs-on: ubuntu-latest
@@ -49,7 +53,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dist-build
-          path: dist/
+          path: frontend/dist/
           retention-days: 5
 
   security-scan:
@@ -106,10 +110,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: dist-build
-          path: dist/
+          path: frontend/dist/
 
       - name: List build output
-        run: ls -la dist/ || echo "No dist directory"
+        run: ls -la dist/ || echo "No dist directory in $(pwd)"
 
       - name: Summary
         run: echo "✅ Build and deploy completed successfully"

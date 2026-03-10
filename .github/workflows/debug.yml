@@ -5,6 +5,10 @@ on:
   push:
     branches: [main, develop]
 
+defaults:
+  run:
+    working-directory: frontend
+
 jobs:
   debug-build:
     runs-on: ubuntu-latest
