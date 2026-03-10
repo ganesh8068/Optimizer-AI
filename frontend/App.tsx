@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { FileUpload } from "./components/FileUpload";
 import { ResultsView } from "./components/ResultsView";
@@ -6,6 +6,13 @@ import { LinkedInResultsView } from "./components/LinkedInResultsView";
 import { Hero } from "./components/Hero";
 import AboutPage from "./components/ui/about-page";
 import RoadmapPage from "./components/ui/roadmap-page";
+import LoginPage from "./components/pages/LoginPage";
+import SignupPage from "./components/pages/SignupPage";
+import ProfilePage from "./components/pages/ProfilePage";
+import InterviewPage from "./components/pages/InterviewPage";
+import DSASheetPage from "./components/pages/DSASheetPage";
+import DashboardPage from "./components/pages/DashboardPage";
+import AuthService from "./services/authService";
 import {
   ExperienceLevel,
   UploadedFiles,
@@ -14,15 +21,21 @@ import {
   AppView,
 } from "./types";
 import { analyzeResume, analyzeLinkedIn } from "./geminiService";
-import { Footer } from "./components/ui/modem-animated-footer";
-import { Twitter, Linkedin, Github, Mail, Menu, X } from "lucide-react";
+import { Menu, X, User, LogOut, Bot, Code } from "lucide-react";
 import { Icons } from "./constants";
+import AppLayout from "./components/layout/AppLayout";
 
 const App: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const currentView = location.pathname === "/" ? "home" : location.pathname.substring(1);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(AuthService.isLoggedIn());
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  const handleAuthChange = useCallback(() => {
+    setIsLoggedIn(AuthService.isLoggedIn());
+  }, []);
   const [files, setFiles] = useState<UploadedFiles>({ resume: null, linkedinProfile: null });
   const [jobRole, setJobRole] = useState("");
   const [expLevel, setExpLevel] = useState<ExperienceLevel>(ExperienceLevel.STUDENT);
@@ -91,118 +104,39 @@ const App: React.FC = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const footerSocials = [
-    { icon: <Twitter />, href: "#", label: "Twitter" },
-    { icon: <Linkedin />, href: "#", label: "LinkedIn" },
-    { icon: <Github />, href: "#", label: "GitHub" },
-    { icon: <Mail />, href: "mailto:hello@optimizer.ai", label: "Email" },
-  ];
-
-  const footerNav = [
-    { label: "Pricing", href: "#" },
-    { label: "Methodology", href: "#" },
-    { label: "Privacy", href: "#" },
-    { label: "Terms", href: "#" },
-  ];
+  const currentUser = AuthService.getUser();
 
   return (
-    <div className="min-h-screen bg-white selection:bg-indigo-100 antialiased font-sans">
-      {/* Navbar */}
-      <nav className="bg-white/80 backdrop-blur-md px-4 sm:px-8 py-4 fixed top-0 left-0 right-0 z-50 border-b border-slate-50 shadow-sm">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div
-            className="flex items-center gap-2 sm:gap-4 cursor-pointer group"
-            onClick={() => navigateTo("home")}
-          >
-            <div className="flex items-center justify-center text-[#4F46E5] group-hover:rotate-45 transition-transform duration-500">
-              <Icons.Logo className="w-8 sm:w-12 h-8 sm:h-12" />
-            </div>
-            <h1 className="text-lg sm:text-2xl font-black text-[#1E293B] tracking-tight group-hover:text-[#4F46E5] transition-colors hidden sm:block">
-              Optimizer AI
-            </h1>
-          </div>
-
-          {/* Desktop Navigation */}
-          <div className="hidden sm:flex gap-4 md:gap-6 items-center">
-            <button
-              onClick={() => navigateTo("resume")}
-              className={`px-4 md:px-6 py-2 text-[10px] md:text-xs font-black uppercase tracking-widest rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 ${currentView === "resume" ? "bg-[#4F46E5] text-white shadow-lg shadow-indigo-100" : "text-slate-400 hover:text-indigo-600"}`}
-            >
-              Resume
-            </button>
-            <button
-              onClick={() => navigateTo("linkedin")}
-              className={`px-4 md:px-6 py-2 text-[10px] md:text-xs font-black uppercase tracking-widest rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 ${currentView === "linkedin" ? "bg-[#0077B5] text-white shadow-lg shadow-blue-100" : "text-slate-400 hover:text-[#0077B5]"}`}
-            >
-              LinkedIn
-            </button>
-            <button
-              onClick={() => navigateTo("roadmap")}
-              className={`px-4 md:px-6 py-2 text-[10px] md:text-xs font-black uppercase tracking-widest rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 ${currentView === "roadmap" ? "bg-amber-500 text-white shadow-lg shadow-amber-100" : "text-slate-400 hover:text-amber-600"}`}
-            >
-              Roadmap
-            </button>
-            <button
-              onClick={() => navigateTo("about")}
-              className={`px-4 md:px-6 py-2 text-[10px] md:text-xs font-black uppercase tracking-widest rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 ${currentView === "about" ? "bg-slate-900 text-white shadow-lg" : "text-slate-400 hover:text-slate-900"}`}
-            >
-              About
-            </button>
-            
-          </div>
-
-          {/* Mobile Hamburger Button */}
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="sm:hidden p-2 text-slate-600 hover:text-[#4F46E5] transition-colors"
-          >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
-
-        {/* Mobile Navigation Menu */}
-        {isMenuOpen && (
-          <div className="sm:hidden mt-4 space-y-2 pb-4 animate-in fade-in slide-in-from-top-2 duration-200">
-            <button
-              onClick={() => navigateTo("resume")}
-              className={`w-full px-4 py-3 text-sm font-black uppercase tracking-widest rounded-lg transition-all duration-300 ${currentView === "resume" ? "bg-[#4F46E5] text-white shadow-lg shadow-indigo-100" : "text-slate-600 hover:bg-slate-50 border border-slate-100"}`}
-            >
-              Resume
-            </button>
-            <button
-              onClick={() => navigateTo("linkedin")}
-              className={`w-full px-4 py-3 text-sm font-black uppercase tracking-widest rounded-lg transition-all duration-300 ${currentView === "linkedin" ? "bg-[#0077B5] text-white shadow-lg shadow-blue-100" : "text-slate-600 hover:bg-slate-50 border border-slate-100"}`}
-            >
-              LinkedIn
-            </button>
-            <button
-              onClick={() => navigateTo("about")}
-              className={`w-full px-4 py-3 text-sm font-black uppercase tracking-widest rounded-lg transition-all duration-300 ${currentView === "about" ? "bg-slate-900 text-white shadow-lg" : "text-slate-600 hover:bg-slate-50 border border-slate-100"}`}
-            >
-              About
-            </button>
-            <button
-              onClick={() => navigateTo("roadmap")}
-              className={`w-full px-4 py-3 text-sm font-black uppercase tracking-widest rounded-lg transition-all duration-300 ${currentView === "roadmap" ? "bg-amber-500 text-white shadow-lg shadow-amber-100" : "text-slate-600 hover:bg-slate-50 border border-slate-100"}`}
-            >
-              Roadmap
-            </button>
-          </div>
-        )}
-      </nav>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 overflow-hidden min-h-[80vh] pt-24 sm:pt-28">
+    <AppLayout 
+      currentView={currentView} 
+      navigateTo={navigateTo} 
+      user={currentUser as any}
+      handleLogout={() => {
+        AuthService.logout();
+        handleAuthChange();
+        navigate("/login");
+      }}
+      isDarkMode={isDarkMode}
+      toggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+    >
+      <div className="w-full">
         <Routes>
           <Route path="/" element={<Hero onNavigate={navigateTo} />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/roadmap" element={<RoadmapPage />} />
+          <Route path="/login" element={<LoginPage onAuthChange={handleAuthChange} />} />
+          <Route path="/signup" element={<SignupPage onAuthChange={handleAuthChange} />} />
+          <Route path="/profile" element={<ProfilePage onAuthChange={handleAuthChange} />} />
+          <Route path="/interview" element={<InterviewPage />} />
+          <Route path="/dsa-sheet" element={<DSASheetPage />} />
           <Route path="/resume" element={
             !resumeResult ? (
-              <div className="max-w-5xl mx-auto opacity-0 animate-fade-up px-4 sm:px-0">
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#1E293B] mb-8 sm:mb-12 text-center tracking-tight uppercase">
+              <div className="max-w-5xl mx-auto opacity-0 animate-fade-up px-4 sm:px-0 mt-8">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#1E293B] dark:text-white mb-8 sm:mb-12 text-center tracking-tight uppercase">
                   ATS Resume Optimization
                 </h2>
-                <div className="bg-white p-1 relative overflow-hidden rounded-lg">
+                <div className="bg-white dark:bg-slate-900 p-1 relative overflow-hidden rounded-lg">
                   <div className="p-6 sm:p-8 md:p-12 space-y-8 sm:space-y-12">
                     <FileUpload
                       label="Upload Resume (PDF)"
@@ -221,7 +155,7 @@ const App: React.FC = () => {
                           value={jobRole}
                           onChange={(e) => setJobRole(e.target.value)}
                           placeholder="e.g. Senior Software Engineer"
-                          className="w-full px-4 sm:px-7 py-4 sm:py-5 rounded-xl sm:rounded-2xl bg-[#f8f9fa] text-slate-800 border-2 border-slate-100 focus:border-[#4F46E5] focus:bg-white transition-all outline-none font-bold text-base sm:text-lg placeholder:text-slate-400 shadow-sm tracking-wide"
+                          className="w-full px-4 sm:px-7 py-4 sm:py-5 rounded-xl sm:rounded-2xl bg-[#f8f9fa] dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-2 border-slate-100 dark:border-slate-700 focus:border-[#4F46E5] focus:bg-white dark:focus:bg-slate-900 transition-all outline-none font-bold text-base sm:text-lg placeholder:text-slate-400 shadow-sm tracking-wide"
                         />
                       </div>
 
@@ -234,7 +168,7 @@ const App: React.FC = () => {
                             <button
                               key={l}
                               onClick={() => setExpLevel(l)}
-                              className={`px-5 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 transition-all duration-300 hover:scale-[1.02] active:scale-95 ${expLevel === l ? "bg-[#4F46E5] text-white border-[#4F46E5] shadow-lg shadow-indigo-100" : "bg-white border-slate-50 text-slate-400 hover:border-slate-200"}`}
+                              className={`px-5 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 transition-all duration-300 hover:scale-[1.02] active:scale-95 ${expLevel === l ? "bg-[#4F46E5] text-white border-[#4F46E5] shadow-lg shadow-indigo-100 dark:shadow-indigo-900/20" : "bg-white dark:bg-slate-800 border-slate-50 dark:border-slate-700 text-slate-400 hover:border-slate-200 dark:hover:border-slate-600"}`}
                             >
                               {l.split(" / ")[0]}
                             </button>
@@ -244,11 +178,11 @@ const App: React.FC = () => {
                     </div>
 
                     <div className="pt-8 px-2">
-                      <div className="p-6 rounded-[1.5rem] border-2 border-[#BFDBFE] bg-white transition-all hover:border-[#4F46E5]/30">
+                      <div className="p-6 rounded-[1.5rem] border-2 border-[#BFDBFE] dark:border-blue-900/50 bg-white dark:bg-slate-900 transition-all hover:border-[#4F46E5]/30">
                         <button
                           disabled={loading || !files.resume || !jobRole}
                           onClick={handleResumeOptimize}
-                          className={`w-full py-6 rounded-xl font-black text-xl flex justify-center items-center gap-3 transition-all duration-500 active:scale-[0.98] ${loading ? "bg-slate-800 text-white cursor-wait" : "bg-[#4F46E5] text-white hover:bg-[#3730A3] shadow-lg shadow-indigo-100/50 hover:shadow-indigo-300/50 shimmer"} disabled:opacity-50 disabled:cursor-not-allowed`}
+                          className={`w-full py-6 rounded-xl font-black text-xl flex justify-center items-center gap-3 transition-all duration-500 active:scale-[0.98] ${loading ? "bg-slate-800 text-white cursor-wait" : "bg-[#4F46E5] text-white hover:bg-[#3730A3] shadow-lg shadow-indigo-100/50 hover:shadow-indigo-300/50 shimmer dark:shadow-indigo-900/20 dark:hover:shadow-indigo-800/20"} disabled:opacity-50 disabled:cursor-not-allowed`}
                         >
                           {loading ? (
                             <span className="flex items-center gap-2">
@@ -289,11 +223,11 @@ const App: React.FC = () => {
 
           <Route path="/linkedin" element={
             !linkedinResult ? (
-              <div className="max-w-5xl mx-auto opacity-0 animate-fade-up">
-                <h2 className="text-5xl font-black text-[#1E293B] mb-12 text-center tracking-tight uppercase">
+              <div className="max-w-5xl mx-auto opacity-0 animate-fade-up mt-8">
+                <h2 className="text-5xl font-black text-[#1E293B] dark:text-white mb-12 text-center tracking-tight uppercase">
                   LinkedIn Profile Optimizer
                 </h2>
-                <div className="bg-white p-1">
+                <div className="bg-white dark:bg-slate-900 p-1">
                   <div className="p-8 md:p-12 space-y-12">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <div className="opacity-0 animate-fade-up stagger-1">
@@ -324,17 +258,17 @@ const App: React.FC = () => {
                           value={jobRole}
                           onChange={(e) => setJobRole(e.target.value)}
                           placeholder="e.g. Marketing Executive & Content Strategist"
-                          className="w-full px-7 py-5 rounded-2xl bg-[#f8f9fa] text-slate-800 border-2 border-slate-100 focus:border-[#0077B5] focus:bg-white transition-all outline-none font-bold text-lg placeholder:text-slate-400 shadow-sm tracking-wide"
+                          className="w-full px-7 py-5 rounded-2xl bg-[#f8f9fa] dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-2 border-slate-100 dark:border-slate-700 focus:border-[#0077B5] focus:bg-white dark:focus:bg-slate-900 transition-all outline-none font-bold text-lg placeholder:text-slate-400 shadow-sm tracking-wide"
                         />
                       </div>
                     </div>
 
                     <div className="pt-8 px-2 opacity-0 animate-fade-up stagger-4">
-                      <div className="p-6 rounded-[1.5rem] border-2 border-[#BFDBFE] bg-white transition-all hover:border-[#0077B5]/30">
+                      <div className="p-6 rounded-[1.5rem] border-2 border-[#BFDBFE] dark:border-blue-900/50 bg-white dark:bg-slate-900 transition-all hover:border-[#0077B5]/30">
                         <button
                           disabled={loading || !files.resume || !files.linkedinProfile || !jobRole}
                           onClick={handleLinkedInOptimize}
-                          className={`w-full py-6 rounded-xl font-black text-xl flex justify-center items-center gap-3 transition-all duration-500 active:scale-[0.98] ${loading ? "bg-slate-800 text-white cursor-wait" : "bg-[#0077B5] text-white hover:bg-[#005E93] shadow-lg shadow-blue-100/50 hover:shadow-blue-300/50 shimmer"} disabled:opacity-50 disabled:cursor-not-allowed`}
+                          className={`w-full py-6 rounded-xl font-black text-xl flex justify-center items-center gap-3 transition-all duration-500 active:scale-[0.98] ${loading ? "bg-slate-800 text-white cursor-wait" : "bg-[#0077B5] text-white hover:bg-[#005E93] shadow-lg shadow-blue-100/50 hover:shadow-blue-300/50 shimmer dark:shadow-blue-900/20"} disabled:opacity-50 disabled:cursor-not-allowed`}
                         >
                           {loading ? (
                             <span className="flex items-center gap-2">
@@ -373,15 +307,8 @@ const App: React.FC = () => {
             ) : <LinkedInResultsView data={linkedinResult} />
           } />
         </Routes>
-      </main>
-
-      <Footer
-        brandName="Optimizer AI"
-        brandDescription="The world's most advanced Gemini-powered platform for modern career transformation. Build your high-impact brand in seconds."
-        socialLinks={footerSocials}
-        navLinks={footerNav}
-      />
-    </div>
+      </div>
+    </AppLayout>
   );
 };
 

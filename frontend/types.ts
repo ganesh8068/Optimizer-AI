@@ -36,4 +36,27 @@ export interface UploadedFiles {
   linkedinProfile: File | null;
 }
 
-export type AppView = 'home' | 'resume' | 'linkedin' | 'about' | 'roadmap';
+export interface InterviewQuestion {
+  id: number;
+  question: string;
+  category: string;
+  difficulty: 'Easy' | 'Medium' | 'Hard';
+}
+
+export interface InterviewFeedback {
+  score: number;
+  strengths: string[];
+  improvements: string[];
+  sampleAnswer: string;
+}
+
+export interface InterviewMessage {
+  id: number;
+  role: 'interviewer' | 'candidate';
+  content: string;
+  feedback?: InterviewFeedback;
+  question?: InterviewQuestion;
+  timestamp: Date;
+}
+
+export type AppView = 'home' | 'dashboard' | 'resume' | 'linkedin' | 'about' | 'roadmap' | 'login' | 'signup' | 'profile' | 'interview' | 'dsa-sheet';
