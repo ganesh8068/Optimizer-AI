@@ -13,9 +13,6 @@ env:
 jobs:
   lint-and-test:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
 
     steps:
       - name: Checkout code
@@ -26,24 +23,30 @@ jobs:
         with:
           node-version: 20.x
           cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Environment Debug (Basic)
+        working-directory: frontend
         run: |
           node --version
           npm --version
 
       - name: Install dependencies
+        working-directory: frontend
         run: |
           rm -f package-lock.json
           npm install
 
       - name: Environment Debug (Full)
+        working-directory: frontend
         run: npx tsc --version
 
       - name: Run TypeScript compiler check
+        working-directory: frontend
         run: npx tsc --noEmit
 
       - name: Build application
+        working-directory: frontend
         run: npm run build
         env:
           VITE_OPENAI_API_KEY: ${{ secrets.VITE_OPENAI_API_KEY || 'test-key-for-ci' }}
@@ -58,9 +61,6 @@ jobs:
   security-scan:
     runs-on: ubuntu-latest
     continue-on-error: true
-    defaults:
-      run:
-        working-directory: frontend
 
     steps:
       - name: Checkout code
@@ -71,13 +71,16 @@ jobs:
         with:
           node-version: 20.x
           cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
+        working-directory: frontend
         run: |
           rm -f package-lock.json
           npm install
 
       - name: Run npm audit
+        working-directory: frontend
         run: npm audit --audit-level=moderate || true
 
       - name: Security scan summary
@@ -87,9 +90,6 @@ jobs:
     needs: lint-and-test
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
-    defaults:
-      run:
-        working-directory: frontend
 
     steps:
       - name: Checkout code
@@ -100,13 +100,16 @@ jobs:
         with:
           node-version: 20.x
           cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
+        working-directory: frontend
         run: |
           rm -f package-lock.json
           npm install
 
       - name: Build application
+        working-directory: frontend
         run: npm run build
         env:
           VITE_OPENAI_API_KEY: ${{ secrets.VITE_OPENAI_API_KEY || 'test-key-for-ci' }}
@@ -118,6 +121,7 @@ jobs:
           path: frontend/dist/
 
       - name: List build output
+        working-directory: frontend
         run: ls -la dist/ || echo "No dist directory in $(pwd)"
 
       - name: Summary
@@ -129,9 +133,6 @@ jobs:
     if: always()
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
       - name: Check pipeline status
         run: |
           LINT_STATUS="${{ needs.lint-and-test.result }}"
