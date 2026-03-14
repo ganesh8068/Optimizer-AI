@@ -43,6 +43,12 @@ export const ProblemList: React.FC<ProblemListProps> = ({ section, completed, to
 
   const handleNoteChange = (id: string, value: string) => {
     localStorage.setItem(`dsa_note_${id}`, value);
+    // Proactively save to DB if logged in
+    import('../../services/authService').then(m => {
+      if (m.default.isLoggedIn()) {
+        m.default.updateDSANote(id, value);
+      }
+    });
   };
 
   const getNote = (id: string) => {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Flame, Moon, Sun, Menu, Bell } from 'lucide-react';
+import { Search, Flame, Moon, Sun, Menu, Bell, LogOut } from 'lucide-react';
 import { AuthUser } from '../../services/authService';
 
 interface TopNavbarProps {
@@ -99,14 +99,24 @@ const TopNavbar: React.FC<TopNavbarProps> = ({
         {/* Divider */}
         <div className={`w-px h-6 mx-1 ${isDarkMode ? 'bg-[#2A2D3A]' : 'bg-slate-200'}`}></div>
 
-        {/* Profile Avatar */}
+        {/* Sign Out Button */}
         <button 
           onClick={handleLogout}
-          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          className={`flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-xl transition-all hover:scale-105 active:scale-95 group
+            ${isDarkMode 
+              ? 'bg-slate-800/50 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 border border-slate-700/50 hover:border-rose-500/20' 
+              : 'bg-slate-50 hover:bg-rose-50 text-slate-500 hover:text-rose-600 border border-slate-100 hover:border-rose-200 shadow-sm'}
+          `}
           title="Sign Out"
         >
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-xs font-bold text-white shadow-sm ring-2 ring-transparent hover:ring-indigo-500/30 transition-all">
+          <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black text-white shadow-sm transition-all group-hover:bg-rose-500 bg-gradient-to-br from-indigo-500 to-purple-600`}>
             {initials}
+          </div>
+          <div className="flex flex-col items-start leading-none">
+            <span className="text-[9px] font-black uppercase tracking-widest opacity-60">Account</span>
+            <span className="text-[10px] font-black uppercase tracking-widest flex items-center gap-1 mt-0.5">
+              Sign Out <LogOut className="w-2.5 h-2.5" />
+            </span>
           </div>
         </button>
 

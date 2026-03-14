@@ -30,15 +30,17 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   };
 
   return (
-    <div className="flex flex-col gap-2">
-      <label className="text-sm font-semibold text-slate-700">{label}</label>
+    <div className="flex flex-col gap-4 group/container">
+      <label className={`text-[11px] font-black uppercase tracking-[0.3em] transition-colors duration-300 ${selectedFile ? "text-indigo-600" : "text-slate-400 group-hover/container:text-slate-500"}`}>
+        {label}
+      </label>
       <div
         onClick={handleClick}
-        className={`relative group flex flex-col items-center justify-center border-2 border-dashed rounded-lg sm:rounded-xl p-6 sm:p-8 cursor-pointer transition-all duration-200 
+        className={`relative group flex flex-col items-center justify-center border-4 border-dashed rounded-[2rem] p-10 sm:p-14 cursor-pointer transition-all duration-500 overflow-hidden
           ${
             selectedFile
-              ? "border-indigo-400 bg-indigo-50/30"
-              : "border-slate-300 hover:border-indigo-400 hover:bg-slate-50"
+              ? "border-indigo-200 bg-indigo-50/20 shadow-inner"
+              : "border-slate-100 bg-slate-50/50 hover:border-indigo-300 hover:bg-white hover:shadow-2xl hover:shadow-indigo-100/50"
           }`}
       >
         <input
@@ -51,17 +53,35 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         />
 
         <div
-          className={`p-3 rounded-full mb-3 transition-colors ${selectedFile ? "bg-indigo-100 text-indigo-600" : "bg-slate-100 text-slate-500"}`}
+          className={`relative w-20 h-20 rounded-3xl mb-6 flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 shadow-xl
+            ${selectedFile 
+              ? "bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-indigo-200" 
+              : "bg-white text-slate-400 group-hover:text-indigo-600 group-hover:shadow-indigo-100 border border-slate-50"}`}
         >
-          {selectedFile ? <Icons.Check /> : <Icons.Upload />}
+          {selectedFile ? <Icons.Check size={32} /> : <Icons.Upload size={32} />}
         </div>
 
-        <span
-          className={`text-sm font-medium ${selectedFile ? "text-indigo-700" : "text-slate-600"}`}
-        >
-          {selectedFile ? selectedFile.name : "Click to upload PDF"}
-        </span>
-        <p className="text-xs text-slate-400 mt-1">PDF file up to 10MB</p>
+        <div className="text-center relative z-10">
+          <span
+            className={`block text-lg font-black tracking-tight mb-2 transition-colors duration-300
+              ${selectedFile ? "text-slate-900" : "text-slate-600 group-hover:text-slate-900"}`}
+          >
+            {selectedFile ? selectedFile.name : "Select PDF Document"}
+          </span>
+          <div className="flex items-center justify-center gap-2">
+            <div className={`w-1.5 h-1.5 rounded-full ${selectedFile ? "bg-green-500 animate-pulse" : "bg-slate-300"}`} />
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+              {selectedFile ? `${(selectedFile.size / (1024 * 1024)).toFixed(2)} MB` : "Maximum size 10MB"}
+            </p>
+          </div>
+        </div>
+
+        {/* Progress pulse for selected state */}
+        {selectedFile && (
+          <div className="absolute top-0 right-0 p-4">
+             <div className="text-[10px] font-black text-indigo-500 bg-indigo-100 px-2 py-1 rounded-full uppercase tracking-tighter shadow-sm blur-[0.5px]">Ready</div>
+          </div>
+        )}
       </div>
     </div>
   );

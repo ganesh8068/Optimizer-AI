@@ -78,6 +78,23 @@ const userSchema = new mongoose.Schema(
       },
     ],
     skills: [{ type: String, trim: true }],
+    dsaProgress: {
+      completedProblems: [{ type: String }],
+      streak: {
+        count: { type: Number, default: 0 },
+        lastDate: { type: String, default: "" },
+      },
+      activityGraph: {
+        type: Map,
+        of: Number,
+        default: {},
+      },
+      notes: {
+        type: Map,
+        of: String,
+        default: {},
+      },
+    },
   },
   { timestamps: true }
 );

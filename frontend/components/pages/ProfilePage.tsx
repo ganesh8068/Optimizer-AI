@@ -68,20 +68,27 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onAuthChange }) => {
       return;
     }
     AuthService.getProfile()
-      .then((u) => setUser(u))
+      .then((u) => {
+        setUser(u);
+        if (u.dsaProgress) {
+          setDsaStreak(u.dsaProgress.streak.count || 0);
+          setDsaSolved(u.dsaProgress.completedProblems?.length || 0);
+          setGraphData(u.dsaProgress.activityGraph || {});
+          
+          // Legacy check/migration if needed can go here
+        } else {
+          // Fallback to local storage if not in DB yet
+          try {
+            const storedStreak = JSON.parse(localStorage.getItem("dsa_sheet_streak") || "{}");
+            setDsaStreak(storedStreak.count || 0);
+            const storedSolved = JSON.parse(localStorage.getItem("dsa_sheet_progress") || "[]");
+            setDsaSolved(storedSolved.length || 0);
+            const storedGraph = JSON.parse(localStorage.getItem("dsa_sheet_graph_data") || "{}");
+            setGraphData(storedGraph);
+          } catch {}
+        }
+      })
       .catch(() => {});
-      
-    // Load DSA stats from local storage
-    try {
-      const storedStreak = JSON.parse(localStorage.getItem("dsa_sheet_streak") || "{}");
-      setDsaStreak(storedStreak.count || 0);
-      const storedSolved = JSON.parse(localStorage.getItem("dsa_sheet_progress") || "[]");
-      setDsaSolved(storedSolved.length || 0);
-      const storedGraph = JSON.parse(localStorage.getItem("dsa_sheet_graph_data") || "{}");
-      setGraphData(storedGraph);
-    } catch {
-      // Ignore
-    }
   }, [navigate]);
 
   const startEditing = () => {

@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ProblemList } from "../ui/ProblemList";
+import AuthService from "../../services/authService";
 
 import { DSA_SECTIONS, TOTAL_PROBLEMS, type Problem, type Section } from "../../constants/dsaData";
 const LS_KEY = "dsa_sheet_progress";
@@ -72,7 +73,58 @@ const DSASheetPage: React.FC = () => {
   useEffect(() => { localStorage.setItem(LS_KEY, JSON.stringify([...completed])); }, [completed]);
   useEffect(() => { localStorage.setItem(LS_DARK, String(dark)); }, [dark]);
 
-  // Streak tracking
+  // Sync and fetch from DB
+  useEffect(() => {
+    const fetchData = async () => {
+      if (AuthService.isLoggedIn()) {
+        try {
+          const dbProgress = await AuthService.getDSAProgress();
+          
+          // Initial sync from local storage if DB is mostly empty
+          const localProgress = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
+          if (dbProgress.completedProblems.length === 0 && localProgress.length > 0) {
+            const localStreak = JSON.parse(localStorage.getItem(LS_STREAK) || "{}");
+            const localGraph = JSON.parse(localStorage.getItem(LS_GRAPH) || "{}");
+            const allNotes: Record<string, string> = {};
+            // Basic note collection
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key?.startsWith('dsa_note_')) {
+                    allNotes[key.replace('dsa_note_', '')] = localStorage.getItem(key) || '';
+                }
+            }
+
+            const synced = await AuthService.syncDSAProgress({
+                progress: localProgress,
+                streak: localStreak,
+                graphData: localGraph,
+                notes: allNotes
+            });
+            setCompleted(new Set(synced.progress.completedProblems));
+            setStreak(synced.progress.streak.count);
+          } else {
+            setCompleted(new Set(dbProgress.completedProblems));
+            setStreak(dbProgress.streak.count);
+            
+            // Sync DB data TO local storage for offline/fallback
+            localStorage.setItem(LS_KEY, JSON.stringify(dbProgress.completedProblems));
+            localStorage.setItem(LS_STREAK, JSON.stringify({ date: dbProgress.streak.lastDate, count: dbProgress.streak.count }));
+            localStorage.setItem(LS_GRAPH, JSON.stringify(dbProgress.activityGraph));
+            if (dbProgress.notes) {
+                Object.entries(dbProgress.notes).forEach(([id, note]) => {
+                    localStorage.setItem(`dsa_note_${id}`, note as string);
+                });
+            }
+          }
+        } catch (err) {
+          console.error("DB Sync error:", err);
+        }
+      }
+    };
+    fetchData();
+  }, []);
+
+  // Streak tracking (fallback for guests)
   const updateStreak = useCallback(() => {
     const today = new Date().toDateString();
     const stored = JSON.parse(localStorage.getItem(LS_STREAK) || "{}");
@@ -87,39 +139,49 @@ const DSASheetPage: React.FC = () => {
     }
   }, []);
 
-  const toggleProblem = useCallback((id: string) => {
+  const toggleProblem = useCallback(async (id: string) => {
+    // Optimistic update
     setCompleted((prev) => {
       const next = new Set(prev);
       const today = new Date().toISOString().split('T')[0];
+      const isFinishing = !next.has(id);
       
       if (next.has(id)) { 
         next.delete(id);
-        
-        // Remove from today's graph count
-        try {
-          const graphData = JSON.parse(localStorage.getItem(LS_GRAPH) || "{}");
-          if (graphData[today]) {
-            graphData[today] = Math.max(0, graphData[today] - 1);
-            localStorage.setItem(LS_GRAPH, JSON.stringify(graphData));
-          }
-        } catch {}
       } else {
         next.add(id);
         setLastSolved(id);
-        updateStreak();
-        
-        // Add to today's graph count
-        try {
-          const graphData = JSON.parse(localStorage.getItem(LS_GRAPH) || "{}");
-          graphData[today] = (graphData[today] || 0) + 1;
-          localStorage.setItem(LS_GRAPH, JSON.stringify(graphData));
-        } catch {}
-        
-        // Check if all done
         if (next.size === TOTAL_PROBLEMS) {
           setTimeout(() => launchConfetti(), 300);
         }
       }
+
+      // API Call
+      if (AuthService.isLoggedIn()) {
+        AuthService.toggleDSAProblem(id).then(res => {
+            setStreak(res.streak.count);
+            // Update local storage backup
+            localStorage.setItem(LS_KEY, JSON.stringify(res.completedProblems));
+            localStorage.setItem(LS_STREAK, JSON.stringify({ date: res.streak.lastDate, count: res.streak.count }));
+            localStorage.setItem(LS_GRAPH, JSON.stringify(res.activityGraph));
+        }).catch(err => {
+            console.error("Toggle API error:", err);
+            // Rollback on error?
+        });
+      } else {
+        // Fallback to local storage logic for guests
+        updateStreak();
+        try {
+          const graphData = JSON.parse(localStorage.getItem(LS_GRAPH) || "{}");
+          if (isFinishing) {
+            graphData[today] = (graphData[today] || 0) + 1;
+          } else {
+            graphData[today] = Math.max(0, (graphData[today] || 0) - 1);
+          }
+          localStorage.setItem(LS_GRAPH, JSON.stringify(graphData));
+        } catch {}
+      }
+
       return next;
     });
   }, [updateStreak]);

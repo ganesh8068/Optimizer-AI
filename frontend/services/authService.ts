@@ -31,6 +31,12 @@ export interface AuthUser {
   resumeCount: number;
   linkedinCount: number;
   createdAt: string;
+  dsaProgress?: {
+    completedProblems: string[];
+    streak: { count: number; lastDate: string };
+    activityGraph: Record<string, number>;
+    notes: Record<string, string>;
+  };
 }
 
 export interface AuthResponse {
@@ -113,6 +119,57 @@ class AuthService {
     if (!res.ok) throw new Error(data.message || "Failed to update profile");
     localStorage.setItem(this.USER_KEY, JSON.stringify(data.user));
     return data.user;
+  }
+
+  static async getDSAProgress(): Promise<any> {
+    const res = await fetch(`${API_BASE}/dsa/progress`, {
+      headers: { Authorization: `Bearer ${this.getToken()}` },
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Failed to fetch DSA progress");
+    return data;
+  }
+
+  static async toggleDSAProblem(problemId: string): Promise<any> {
+    const res = await fetch(`${API_BASE}/dsa/toggle`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${this.getToken()}`,
+      },
+      body: JSON.stringify({ problemId }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Failed to toggle problem");
+    return data;
+  }
+
+  static async syncDSAProgress(body: any): Promise<any> {
+    const res = await fetch(`${API_BASE}/dsa/sync`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${this.getToken()}`,
+      },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Failed to sync DSA progress");
+    return data;
+  }
+
+  static async updateDSANote(problemId: string, note: string): Promise<any> {
+    const res = await fetch(`${API_BASE}/dsa/notes`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${this.getToken()}`,
+      },
+      body: JSON.stringify({ problemId, note }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Failed to update note");
+    return data;
   }
 }
 
